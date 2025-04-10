@@ -29,7 +29,7 @@ const selectedTicketId = ref(null);
 const activateEditTicketForm = ref(false);
 const projectIdOfSelectedTicketId = ref(null);
 
-const columns =  [
+const columns = [
   {
     title: 'Title',
     key: 'title',
@@ -54,7 +54,7 @@ const columns =  [
     key: 'projectName',
     filterOptions: projectFilterOptions(),
     filter(value, row) {
-      return ~row.projectName.indexOf(value)
+      return ~row.projectName.indexOf(value);
     },
     sorter: 'default',
     render(row) {
@@ -75,7 +75,6 @@ const columns =  [
   {
     title: 'Due',
     key: 'dueTime',
-    sorter: (row1, row2) => nullableDateSorter(row1.dueTime, row2.dueTime)
   },
   {
     title: 'Assignees',
@@ -90,21 +89,29 @@ const columns =  [
         value: 'unassigned'
       }
     ],
-    filter (value, row) {
+    filter(value, row) {
       if (value == 'myUserId') {
         return row.assigneeIds.includes(user.value.id);
       }
-
       return row.assigneeIds == "";
     }
+  },
+  {
+    title: 'Priority', // New column for priority
+    key: 'priority',
+    sorter: (row1, row2) => {
+      const order = { 'LOW': 1, 'MEDIUM': 2, 'HIGH': 3, 'URGENT': 4 };
+      return order[row1.priority] - order[row2.priority];
+    }
   }
-]
+];
 
 function openEditTicketForm(ticketId, projectId) {
   selectedTicketId.value = ticketId;
   projectIdOfSelectedTicketId.value = projectId;
   activateEditTicketForm.value = true;
 }
+
 function handleCloseEditTicketForm() {
   activateEditTicketForm.value = false;
   selectedTicketId.value = null;
@@ -118,7 +125,7 @@ function nullableDateSorter(dateAlpha, dateOmega) {
   if (dateOmega == null) {
     return -1;
   }
-  return new Date(dateAlpha) <= new Date(dateOmega) ? -1 : 1
+  return new Date(dateAlpha) <= new Date(dateOmega) ? -1 : 1;
 }
 
 async function updateAll() {
@@ -129,6 +136,7 @@ async function updateAll() {
     await ticketStore.updateTicketsByProjectId(project.id);
   }
 }
+
 async function compileTableData() {
   const newData = ref([]);
   for (let ticket of tickets.value) {
@@ -138,7 +146,7 @@ async function compileTableData() {
     for (let assigneeId of ticket.assigneeIds) {
       const response = await fetchAgent.getUserById(assigneeId);
       if (response.isSuccessful) {
-        assignees.value.push({ userId: response.data.id, userName: response.data.name })
+        assignees.value.push({ userId: response.data.id, userName: response.data.name });
       }
     }
 
@@ -153,21 +161,23 @@ async function compileTableData() {
       projectName: project.name,
       phaseName: phase.name,
       assigneeNames: assigneeNames.toString(),
-      assigneeIds: assignees.value.map(assignee => assignee.userId)
+      assigneeIds: assignees.value.map(assignee => assignee.userId),
+      priority: ticket.priority // Add priority to table data
     });
   }
 
   ticketData.value = newData.value;
-};
+}
 
 function projectFilterOptions() {
-  const filterOptions = ref([])
+  const filterOptions = ref([]);
   const projectNames = projects.value.map(project => project.name);
   for (let projectName of projectNames) {
     filterOptions.value.push({ label: projectName, value: projectName });
   }
   return filterOptions.value;
 }
+
 function reloadPage() {
   window.location.reload(true);
 }
@@ -177,23 +187,33 @@ const tableHeight = computed(() => Math.floor((screen.height * 70) / 100));
 onMounted(async () => {
   await updateAll();
   compileTableData();
-})
-
+});
 </script>
 
 <template>
   <div style="background-color: #ffffff; width: 100%;">
     <div style="padding-left: 25px; width:85vw;">
       <h1>Tickets</h1>
-      <n-modal v-model:show=activateEditTicketForm :trap-focus="false">
-      <EditTicketForm :ticketId="selectedTicketId" :projectId="projectIdOfSelectedTicketId" @closeEditTicketForm="handleCloseEditTicketForm"
-        @updateTickets="reloadPage" />
-    </n-modal>
+      <n-modal v-model:show="activateEditTicketForm" :trap-focus="false">
+        <EditTicketForm 
+          :ticketId="selectedTicketId" 
+          :projectId="projectIdOfSelectedTicketId" 
+          @closeEditTicketForm="handleCloseEditTicketForm"
+          @updateTickets="reloadPage" 
+        />
+      </n-modal>
       <n-space vertical :size="20">
         <n-space justify="end">
         </n-space>
-        <n-data-table ref="table" :style="{ height: `${tableHeight}px` }" :columns="columns" :data="ticketData"
-          :single-line="false" :bordered="false" flex-height />
+        <n-data-table 
+          ref="table" 
+          :style="{ height: `${tableHeight}px` }" 
+          :columns="columns" 
+          :data="ticketData"
+          :single-line="false" 
+          :bordered="false" 
+          flex-height 
+        />
       </n-space>
     </div>
   </div>

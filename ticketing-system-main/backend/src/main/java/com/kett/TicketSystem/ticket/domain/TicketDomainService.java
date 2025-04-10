@@ -58,9 +58,7 @@ public class TicketDomainService {
         this.userDataOfTicketRepository = userDataOfTicketRepository;
     }
 
-
     // create
-
     public Ticket addTicket(Ticket ticket, EmailAddress postingUserEmail) throws NoProjectFoundException, InvalidProjectMembersException {
         if (!projectDataOfTicketRepository.existsByProjectId(ticket.getProjectId())) {
             throw new NoProjectFoundException("could not find project with id: " + ticket.getProjectId());
@@ -72,13 +70,14 @@ public class TicketDomainService {
         }
         UUID postingUserId = getUserIdByUserEmailAddress(postingUserEmail);
 
-        // set phaseId of ticket
-        UUID firstPhaseOfProjectId =
-                phaseDataOfTicketRepository
-                        .findByProjectIdAndPreviousPhaseIdIsNull(ticket.getProjectId())
-                        .get(0)
-                        .getPhaseId();
+        // Set phaseId of ticket
+        UUID firstPhaseOfProjectId = phaseDataOfTicketRepository
+                .findByProjectIdAndPreviousPhaseIdIsNull(ticket.getProjectId())
+                .get(0)
+                .getPhaseId();
         ticket.setPhaseId(firstPhaseOfProjectId);
+
+        // Priority is already set in the Ticket constructor (default: MEDIUM), no need to set it here unless overridden
 
         Ticket initializedTicket = ticketRepository.save(ticket);
         eventPublisher.publishEvent(new TicketCreatedEvent(initializedTicket.getId(), initializedTicket.getProjectId(), postingUserId));
@@ -104,9 +103,7 @@ public class TicketDomainService {
                 );
     }
 
-
     // read
-
     public Ticket getTicketById(UUID id) throws NoTicketFoundException {
         return ticketRepository
                 .findById(id)
@@ -149,16 +146,15 @@ public class TicketDomainService {
         return phaseData.get(0).getProjectId();
     }
 
-
     // update
-
     public void patchTicket(
             UUID id,
             String title,
             String description,
             LocalDateTime dueTime,
             UUID phaseId,
-            List<UUID> assigneeIds
+            List<UUID> assigneeIds,
+            Ticket.TicketPriority priority // New parameter for priority
     ) throws NoTicketFoundException, InvalidProjectMembersException, UnrelatedPhaseException {
         Ticket ticket = this.getTicketById(id);
 
@@ -181,7 +177,6 @@ public class TicketDomainService {
                         " does not."
                 );
             }
-
             oldPhaseId = ticket.getPhaseId();
             ticket.setPhaseId(phaseId);
         }
@@ -193,6 +188,9 @@ public class TicketDomainService {
             }
             publishAssignmentEvents(ticket, assigneeIds, ticket.getAssigneeIds());
             ticket.setAssigneeIds(assigneeIds);
+        }
+        if (priority != null) {
+            ticket.setPriority(priority); // Update priority if provided
         }
 
         ticketRepository.save(ticket);
@@ -225,9 +223,7 @@ public class TicketDomainService {
                 );
     }
 
-
     // delete
-
     public void deleteTicketById(UUID id) throws NoTicketFoundException {
         Ticket ticket = this.getTicketById(id);
         ticketRepository.removeById(id);
@@ -239,18 +235,15 @@ public class TicketDomainService {
         ticketRepository.deleteByProjectId(projectId);
     }
 
-
     // event listeners
-
     @EventListener
     @Async
     public void handleMembershipDeletedEvent(MembershipDeletedEvent membershipDeletedEvent) {
-        List<Ticket> tickets =
-                ticketRepository
-                        .findByProjectId(membershipDeletedEvent.getProjectId())
-                        .stream()
-                        .filter(ticket -> ticket.isAssignee(membershipDeletedEvent.getUserId()))
-                        .toList();
+        List<Ticket> tickets = ticketRepository
+                .findByProjectId(membershipDeletedEvent.getProjectId())
+                .stream()
+                .filter(ticket -> ticket.isAssignee(membershipDeletedEvent.getUserId()))
+                .toList();
 
         tickets.forEach(ticket -> ticket.removeAssignee(membershipDeletedEvent.getUserId()));
         ticketRepository.saveAll(tickets);
@@ -281,7 +274,6 @@ public class TicketDomainService {
     public void handleDefaultProjectCreatedEvent(DefaultProjectCreatedEvent defaultProjectCreatedEvent) {
         projectDataOfTicketRepository.save(new ProjectDataOfTicket(defaultProjectCreatedEvent.getProjectId()));
     }
-
 
     @EventListener
     @Async

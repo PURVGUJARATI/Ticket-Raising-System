@@ -1,26 +1,9 @@
-<template>
-  <n-dropdown placement="bottom-end" :options="options" trigger="click" @select="handleSelect">
-    <n-avatar 
-      :style="{ backgroundColor: randomColor }" 
-      round 
-      :size="48" 
-      class="cursor-pointer hover:opacity-80 text-white font-bold uppercase"
-    >
-      {{ (user?.name?.charAt(0) || "U").toUpperCase() }}
-    </n-avatar>
-  </n-dropdown>
-
-  <n-modal v-model:show="activateEditUserForm" :trap-focus="false">
-    <EditUserForm @closeInvitationsForm="handleDeactivateEditUserForm" />
-  </n-modal>
-</template>
-
 <script setup>
 import { useUserStore } from '../../stores/user';
 import { useSessionStore } from '../../stores/session';
-import { h, ref, computed } from "vue";
+import { h, ref, computed, onMounted } from "vue";
 import { NIcon, NDropdown, NAvatar, NModal } from "naive-ui";
-import { PersonCircleOutline as UserIcon, LogOutOutline as LogoutIcon } from "@vicons/ionicons5";
+import { PersonCircleOutline as UserIcon, LogOutOutline as LogoutIcon, SunnyOutline as ThemeIcon } from "@vicons/ionicons5";
 import { storeToRefs } from 'pinia';
 import EditUserForm from './EditUserForm.vue';
 
@@ -29,18 +12,35 @@ const { user } = storeToRefs(userStore);
 const sessionStore = useSessionStore();
 const activateEditUserForm = ref(false);
 
-// Generate a random color for avatar background
+// Avatar color
 const randomColor = computed(() => {
-  const colors = ["#FF5733", "#33FF57", "#5733FF", "#FFC300", "#C70039", "#900C3F"];
+  const colors = ["#2c98f0"];
   return colors[Math.floor(Math.random() * colors.length)];
 });
 
-// Handles dropdown selection
+// Theme toggling
+const isDark = ref(false);
+const toggleTheme = () => {
+  isDark.value = !isDark.value;
+  document.documentElement.classList.toggle('dark-theme', isDark.value);
+  localStorage.setItem('theme', isDark.value ? 'dark' : 'light');
+};
+
+onMounted(() => {
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'dark') {
+    isDark.value = true;
+    document.documentElement.classList.add('dark-theme');
+  }
+});
+
 const handleSelect = (key) => {
   if (key === "profile") {
     activateEditUserForm.value = true;
   } else if (key === "logout") {
     sessionStore.logout();
+  } else if (key === "change-theme") {
+    toggleTheme();
   }
 };
 
@@ -53,6 +53,11 @@ const options = [
     icon: renderIcon(UserIcon)
   },
   {
+    key: "change-theme",
+    label: "Change Theme",
+    icon: renderIcon(ThemeIcon)
+  },
+  {
     key: "logout",
     label: "Logout",
     icon: renderIcon(LogoutIcon)
@@ -60,17 +65,24 @@ const options = [
 ];
 </script>
 
-<style scoped>
-.cursor-pointer {
-  cursor: pointer;
-}
-.text-white {
-  color: white;
-}
-.font-bold {
-  font-weight: bold;
-}
-.uppercase {
-  text-transform: uppercase;
-}
-</style>
+<template>
+  <div class="user-menu">
+    <!-- Avatar Dropdown -->
+    <n-dropdown placement="bottom-end" :options="options" trigger="click" @select="handleSelect">
+      <n-avatar 
+        :style="{ backgroundColor: randomColor }" 
+        round 
+        :size="48" 
+        class="cursor-pointer hover:opacity-80 text-white font-bold uppercase"
+      >
+        {{ (user?.name?.charAt(0) || "U").toUpperCase() }}
+      </n-avatar>
+    </n-dropdown>
+
+    <!-- Modal for Edit Profile -->
+    <n-modal v-model:show="activateEditUserForm" :trap-focus="false">
+      <EditUserForm @closeInvitationsForm="handleDeactivateEditUserForm" />
+    </n-modal>
+  </div>
+</template>
+

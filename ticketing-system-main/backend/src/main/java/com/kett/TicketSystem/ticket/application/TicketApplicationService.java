@@ -63,7 +63,7 @@ public class TicketApplicationService {
             "'ROLE_PROJECT_MEMBER_'.concat(#ticketPostDto.projectId))")
     public TicketResponseDto addTicket(TicketPostDto ticketPostDto, EmailAddress postingUserEmail) {
         Ticket ticket = ticketDomainService.addTicket(
-                dtoMapper.mapTicketPostDtoToTicket(ticketPostDto, null),
+                dtoMapper.mapTicketPostDtoToTicket(ticketPostDto, null), // Priority is mapped here via DtoMapper
                 postingUserEmail
         );
         return dtoMapper.mapTicketToTicketResponseDto(ticket);
@@ -79,7 +79,8 @@ public class TicketApplicationService {
                 ticketPatchDto.getDescription(),
                 ticketPatchDto.getDueTime(),
                 ticketPatchDto.getPhaseId(),
-                ticketPatchDto.getAssigneeIds()
+                ticketPatchDto.getAssigneeIds(),
+                ticketPatchDto.getPriority() // Pass priority to TicketDomainService
         );
     }
 

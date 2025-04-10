@@ -68,17 +68,34 @@ public class AnalysisService {
 
     public String exportCsv() {
         List<Ticket> tickets = ticketRepository.findAll();
-        StringBuilder csv = new StringBuilder("Ticket ID,Title,Status,Created At,Resolved At\n");
-
+    
+        // Preload users and phases for quick lookup
+        Map<UUID, String> userMap = userRepository.findAll()
+                .stream().collect(Collectors.toMap(User::getId, User::getName));
+    
+        Map<UUID, String> phaseMap = phaseRepository.findAll()
+                .stream().collect(Collectors.toMap(Phase::getId, Phase::getName));
+    
+        // Create CSV header
+        StringBuilder csv = new StringBuilder("Ticket ID,Title,Assignee Name,Phase,Priority,Status,Created At,Resolved At\n");
+    
         for (Ticket ticket : tickets) {
+            String assigneeName = ticket.getAssigneeId() != null ? userMap.getOrDefault(ticket.getAssigneeId(), "Unknown") : "Unassigned";
+            String phaseName = ticket.getPhaseId() != null ? phaseMap.getOrDefault(ticket.getPhaseId(), "No Phase") : "No Phase";
+            String Priority = ticket.getPriority() != null ? ticket.getPriority().toString() : "No Priority";
+            String status = ticket.getStatus() != null ? ticket.getStatus().toString() : "Unknown";
+            String resolvedAt = ticket.getResolvedAt() != null ? ticket.getResolvedAt().toString() : "Not Resolved";
+    
             csv.append(ticket.getId()).append(",")
-                .append(ticket.getTitle()).append(",")
-                .append(ticket.getStatus()).append(",")
-                .append(ticket.getCreationTime()).append(",")
-                .append(ticket.getResolvedAt() != null ? ticket.getResolvedAt() : "Not Resolved")
-                .append("\n");
+               .append(ticket.getTitle()).append(",")
+               .append(assigneeName).append(",")
+               .append(phaseName).append(",")
+               .append(Priority).append(",")
+               .append(status).append(",")
+               .append(ticket.getCreationTime()).append(",")
+               .append(resolvedAt).append("\n");
         }
-
+    
         return csv.toString();
-    }
+    }    
 }

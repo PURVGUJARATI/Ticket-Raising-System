@@ -46,7 +46,7 @@ public class Ticket {
     private UUID phaseId;
 
     @Getter
-    @Type(type="uuid-char")
+    @Type(type = "uuid-char")
     @ElementCollection(targetClass = UUID.class, fetch = FetchType.EAGER)
     private List<UUID> assigneeIds = new ArrayList<>();
 
@@ -55,6 +55,15 @@ public class Ticket {
     private TicketStatus status;
 
     private LocalDateTime resolvedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "priority")
+    private TicketPriority priority; // New field for priority
+
+    // Enum for Ticket Priority
+    public enum TicketPriority {
+        LOW, MEDIUM, HIGH,URGENT
+    }
 
     // Constructor
     public Ticket(String title, String description, LocalDateTime dueTime, UUID projectId, UUID phaseId, List<UUID> assigneeIds) {
@@ -66,6 +75,7 @@ public class Ticket {
         this.setProjectId(projectId);
         this.setAssigneeIds(assigneeIds);
         this.status = TicketStatus.OPEN; // Default status
+        this.priority = TicketPriority.MEDIUM; // Default priority
     }
 
     // Setters with validation
@@ -135,5 +145,17 @@ public class Ticket {
 
     public UUID getAssigneeId() {
         return assigneeIds.isEmpty() ? null : assigneeIds.get(0); // Return the first assignee (or null if none)
+    }
+
+    // Priority handling
+    public TicketPriority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(TicketPriority priority) {
+        if (priority == null) {
+            throw new TicketException("Priority must not be null");
+        }
+        this.priority = priority;
     }
 }

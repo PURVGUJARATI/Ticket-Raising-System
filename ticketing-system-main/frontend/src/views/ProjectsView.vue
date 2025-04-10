@@ -165,6 +165,7 @@ async function updateProjects() {
 .card-link {
   text-decoration: none;
   color: inherit;
+  background-color: var(--card-bg);
 }
 
 .project-description {

@@ -1,41 +1,86 @@
 <script setup>
-import { ref, onMounted, watch } from "vue";
-import { useAnalysisStore } from "../stores/analysis";
+import { ref, onMounted, watch, nextTick } from "vue";
 import { Chart, registerables } from "chart.js";
+import { useAnalysisStore } from "../stores/analysis";
+import html2canvas from "html2canvas";
 
 Chart.register(...registerables);
 
 const analysisStore = useAnalysisStore();
-const chartInstance = ref(null);
-const selectedChart = ref("bar"); // ✅ Default to Bar Chart
 
-// 📊 Function to Create or Update the Chart
-const updateChart = () => {
-  const ctx = document.getElementById("ticketChart").getContext("2d");
+const chartInstance1 = ref(null);
+const chartInstance2 = ref(null);
+const selectedChartType = ref("pie");
 
-  if (chartInstance.value) {
-    chartInstance.value.destroy();
+const updateCharts = () => {
+  if (chartInstance1.value) {
+    chartInstance1.value.destroy();
+    chartInstance1.value = null;
+  }
+  if (chartInstance2.value) {
+    chartInstance2.value.destroy();
+    chartInstance2.value = null;
   }
 
-  chartInstance.value = new Chart(ctx, {
-    type: selectedChart.value, // ✅ Switch chart dynamically
+  const ctx1 = document.getElementById("chart1");
+  const ctx2 = document.getElementById("chart2");
+
+  if (!ctx1 || !ctx2) {
+    console.warn("Chart canvas not found");
+    return;
+  }
+
+  const stats = analysisStore.ticketStats;
+
+  chartInstance1.value = new Chart(ctx1, {
+    type: "bar",
     data: {
       labels: ["Total Tickets", "Resolved Tickets"],
-      datasets: [
-        {
-          data: [
-            analysisStore.ticketStats.totalTickets || 0,
-            analysisStore.ticketStats.resolvedTickets || 0,
-          ],
-          backgroundColor: ["#3498db", "#2ecc71"],
-        },
-      ],
+      datasets: [{
+        label: "Tickets",
+        data: [stats.totalTickets, stats.resolvedTickets],
+        backgroundColor: ["#3498db", "#2ecc71"],
+      }],
     },
-    options: { responsive: true, maintainAspectRatio: false },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { stepSize: 1 }
+        }
+      }
+    }
+  });
+
+  chartInstance2.value = new Chart(ctx2, {
+    type: selectedChartType.value,
+    data: {
+      labels: ["Total Tickets", "Resolved Tickets"],
+      datasets: [{
+        label: "Ticket Status",
+        data: [stats.totalTickets, stats.resolvedTickets],
+        backgroundColor: ["#3498db", "#2ecc71"],
+        borderWidth: 1
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'right',
+          display: true
+        }
+      }
+    }
   });
 };
 
-// 📥 Function to Download CSV
 const downloadCsv = async () => {
   const result = await analysisStore.exportCsv();
   if (!result.isSuccessful) {
@@ -43,141 +88,204 @@ const downloadCsv = async () => {
   }
 };
 
-// 🔄 Fetch Data on Page Load
+const downloadDashboardImage = () => {
+  const container = document.querySelector(".main-container");
+  if (!container) return;
+
+  html2canvas(container).then((canvas) => {
+    const link = document.createElement("a");
+    link.download = "dashboard-screenshot.png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  });
+};
+
 onMounted(async () => {
   await analysisStore.getTicketStats();
-  await analysisStore.getTopUsers(); // ✅ Fetch top users
-  updateChart();
+  await analysisStore.getTopUsers();
+  await nextTick();
+  updateCharts();
 });
 
-// 🔄 Update chart when dropdown changes
-watch(selectedChart, () => {
-  updateChart();
+watch(selectedChartType, () => {
+  if (chartInstance2.value) {
+    chartInstance2.value.destroy();
+    chartInstance2.value = null;
+  }
+  updateCharts();
 });
 </script>
 
 <template>
-  <div class="analysis-container">
-    <div class="header">
-      <h1>📊 Ticket Analysis</h1>
-      <button class="btn-download" @click="downloadCsv">📥 CSV</button>
-    </div>
+  <!-- Floating Download Buttons -->
+  <div class="floating-buttons">
+    <button @click="downloadDashboardImage">Download Dashboard</button>
+    <button @click="downloadCsv">Download CSV</button>
+  </div>
 
-    <!-- 📦 Ticket Stats Boxes -->
-    <div class="stats">
-      <div class="stat-card">
+  <div class="main-container">
+    <!-- Top Stats -->
+    <div class="top-container">
+      <div class="stats-box">
         <h2>Total Tickets</h2>
         <p>{{ analysisStore.ticketStats.totalTickets }}</p>
       </div>
-      <div class="stat-card">
+      <div class="stats-box">
         <h2>Resolved Tickets</h2>
         <p>{{ analysisStore.ticketStats.resolvedTickets }}</p>
       </div>
     </div>
 
-    <!-- 🔽 Dropdown to Select Chart Type -->
-    <div class="chart-selector">
-      <label for="chartType">📌 Select Chart Type:</label>
-      <select id="chartType" v-model="selectedChart">
-        <option value="bar">📊 Bar Chart</option>
-        <option value="pie">🥧 Pie Chart</option>
-      </select>
-    </div>
+    <!-- Charts Section -->
+    <div class="charts-container">
+      <!-- Bar Chart -->
+      <div class="stats-box chart-box">
+        <div class="chart-container">
+          <canvas id="chart1"></canvas>
+        </div>
+      </div>
 
-    <!-- 📊 Chart Section -->
-    <div class="chart-container">
-      <canvas id="ticketChart"></canvas>
-    </div>
+      <!-- Pie/Doughnut Chart -->
+      <div class="stats-box chart-box">
+        <select v-model="selectedChartType">
+          <option value="pie">Pie</option>
+          <option value="doughnut">Doughnut</option>
+        </select>
+        <div class="chart-container">
+          <canvas id="chart2"></canvas>
+        </div>
+      </div>
 
-    <!-- 🏆 Top Users Handling Tickets -->
-    <h2>🏆 Top Users Handling Tickets</h2>
-    <ul v-if="analysisStore.topUsers.length">
-      <li v-for="user in analysisStore.topUsers" :key="user.userName">
-        <strong>{{ user.userName }}</strong>: {{ user.ticketCount }} Tickets
-      </li>
-    </ul>
-    <p v-else>Loading top users...</p> <!-- ✅ Fallback message -->
+      <!-- Top Users -->
+      <div class="stats-box chart-box">
+        <h2>🏆 Top Users</h2>
+        <ul v-if="analysisStore.topUsers.length">
+          <li v-for="user in analysisStore.topUsers" :key="user.userName">
+            <strong>{{ user.userName }}</strong>: {{ user.ticketCount }} Tickets
+          </li>
+        </ul>
+        <p v-else>Loading...</p>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.analysis-container {
-  max-width: 900px;
-  margin: auto;
-  background: #ffffff;
+.main-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
   padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.header {
+.top-container {
   display: flex;
+  flex-direction: row;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-/* 📦 Ticket Stats Boxes */
-.stats {
-  display: flex;
-  justify-content: center;
+  width: 100%;
   gap: 20px;
+  margin-bottom: 30px;
 }
 
-.stat-card {
-  background: #f8f9fa;
-  padding: 15px;
-  border-radius: 8px;
+.stats-box {
+  flex: 1;
+  background: #f9f9f9;
+  padding: 20px;
   text-align: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  font-size: 1.0rem;
 }
 
-
-/* 🎯 Dropdown Styling */
-.chart-selector {
+.charts-container {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-  gap: 10px;
+  gap: 20px;
+  width: 100%;
+  flex-wrap: wrap;
 }
 
-select {
-  padding: 6px 12px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  cursor: pointer;
+.chart-box {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .chart-container {
-  max-width: 600px;
-  height: 200px;
-  margin: auto;
-  padding: 20px;
+  position: relative;
+  height: 300px;
+  width: 100%;
+  margin-top: 15px;
 }
 
-/* 🏆 Top Users Styling */
+select {
+  width: 100%;
+  max-width: 200px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  background-color: #f9f9f9;
+  margin: 0 auto;
+}
+
 ul {
   list-style: none;
   padding: 0;
+  margin-top: 15px;
 }
 
-ul li {
+li {
   padding: 8px 0;
+  border-bottom: 1px solid #eee;
 }
 
-.btn-download {
-  background-color: #2ecc71;
+/* Floating download buttons */
+.floating-buttons {
+  position: fixed;
+  top: 20px;
+  right: 100px; /* moved to the left to avoid overlapping */
+  z-index: 1000;
+  display: flex;
+  gap: 12px;
+}
+
+.floating-buttons button {
+  padding: 10px 14px;
+  background-color: #3498db;
   color: white;
+  font-weight: bold;
   border: none;
-  padding: 5px 10px;
-  font-size: 14px;
-  border-radius: 5px;
+  border-radius: 999px; /* full-rounded buttons */
   cursor: pointer;
-  transition: 0.3s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: background-color 0.3s ease;
 }
 
-.btn-download:hover {
-  background-color: #27ae60;
+.floating-buttons button:hover {
+  background-color: #2980b9;
+}
+
+@media (max-width: 900px) {
+  .top-container,
+  .charts-container {
+    flex-wrap: wrap;
+  }
+
+  .stats-box {
+    min-width: calc(50% - 10px);
+  }
+
+  .floating-buttons {
+    flex-direction: column;
+    right: 10px;
+  }
+}
+
+@media (max-width: 600px) {
+  .stats-box {
+    min-width: 100%;
+  }
 }
 </style>

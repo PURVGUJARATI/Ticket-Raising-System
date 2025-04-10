@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "chart.js": "^4.4.8"
+    "chart.js": "^4.4.8",
+    "html2canvas": "^1.4.1"
   }
 }

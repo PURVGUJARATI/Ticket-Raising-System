@@ -89,7 +89,7 @@
           try {
             const loginResult = await sessionStore.login(signInFormValue.value.credentials.email, signInFormValue.value.credentials.password);
             if (loginResult.isLoginSuccessful) {
-              router.push('/projects');
+              router.push('/Analysis');
             } else {
               sendNotification(
                 "Error",
@@ -232,5 +232,6 @@
 <style scoped>
   .card-tabs .n-tabs-nav--bar-type {
     padding-left: 4px;
+    background-color: var(--card-bg);
   }
 </style>

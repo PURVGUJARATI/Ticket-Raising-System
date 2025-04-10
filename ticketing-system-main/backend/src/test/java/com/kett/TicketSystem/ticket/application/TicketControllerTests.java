@@ -343,7 +343,7 @@ private String jwt2;
     @Test
     public void postTicketTest() throws Exception {
         eventCatcher.catchEventOfType(TicketCreatedEvent.class);
-        TicketPostDto ticketPostDto = new TicketPostDto(buildUpProjectId, ticketTitle0, ticketDescription0, dateOfTomorrow, new ArrayList<>());
+        TicketPostDto ticketPostDto = new TicketPostDto();
         MvcResult postResult0 =
                 mockMvc.perform(
                                 post("/tickets")
@@ -388,7 +388,7 @@ private String jwt2;
         String newTitle = "a totally new title";
         String newDescription = "never seen anything like this";
         LocalDateTime newDueTime = dateOfTomorrow.plusDays(1);
-        TicketPatchDto ticketPatchDto = new TicketPatchDto(newTitle, newDescription, newDueTime, null, null);
+        TicketPatchDto ticketPatchDto = new TicketPatchDto(newTitle, newDescription, newDueTime, null, null, null);
         MvcResult patchResult =
                 mockMvc.perform(
                                 patch("/tickets/" + ticketId)
@@ -416,7 +416,7 @@ private String jwt2;
         UUID donePhaseId = restMinion.postPhase(jwt0, buildUpProjectId, "DONE", backlogPhaseId);
 
         eventCatcher.catchEventOfType(TicketPhaseUpdatedEvent.class);
-        TicketPatchDto ticketPatchDto = new TicketPatchDto(null, null, null, donePhaseId, null);
+        TicketPatchDto ticketPatchDto = new TicketPatchDto(null, null, null, donePhaseId, null, null);
         MvcResult patchResult =
                 mockMvc.perform(
                                 patch("/tickets/" + ticketId)
@@ -453,7 +453,7 @@ private String jwt2;
         eventCatcher.catchEventOfType(TicketAssignedEvent.class);
         List<UUID> assigneeIds = new ArrayList<>();
         assigneeIds.add(userId1);
-        TicketPatchDto ticketPatchDto = new TicketPatchDto(null, null, null, null, assigneeIds);
+        TicketPatchDto ticketPatchDto = new TicketPatchDto(null, null, null, null, assigneeIds, null);
         MvcResult patchResult =
                 mockMvc.perform(
                                 patch("/tickets/" + ticketId)

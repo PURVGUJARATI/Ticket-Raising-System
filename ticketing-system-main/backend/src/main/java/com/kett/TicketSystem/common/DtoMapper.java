@@ -36,21 +36,21 @@ public class DtoMapper {
             mapper.map(Membership::getState, MembershipResponseDto::setState);
         });
         modelMapper.typeMap(Notification.class, NotificationResponseDto.class).addMappings(mapper -> {
-           mapper.map(Notification::getId, NotificationResponseDto::setId);
-           mapper.map(Notification::getCreationTime, NotificationResponseDto::setCreationTime);
-           mapper.map(Notification::getRecipientId, NotificationResponseDto::setRecipientId);
-           mapper.map(Notification::getIsRead, NotificationResponseDto::setIsRead);
-           mapper.map(Notification::getContent, NotificationResponseDto::setContent);
+            mapper.map(Notification::getId, NotificationResponseDto::setId);
+            mapper.map(Notification::getCreationTime, NotificationResponseDto::setCreationTime);
+            mapper.map(Notification::getRecipientId, NotificationResponseDto::setRecipientId);
+            mapper.map(Notification::getIsRead, NotificationResponseDto::setIsRead);
+            mapper.map(Notification::getContent, NotificationResponseDto::setContent);
         });
         modelMapper.typeMap(Phase.class, PhaseResponseDto.class).addMappings(mapper -> {
             mapper.map(Phase::getId, PhaseResponseDto::setId);
             mapper.map(Phase::getProjectId, PhaseResponseDto::setProjectId);
             mapper.map(Phase::getName, PhaseResponseDto::setName);
-            mapper.map(phase ->  {
+            mapper.map(phase -> {
                 Phase previousPhase = phase.getPreviousPhase();
                 return (previousPhase == null) ? null : previousPhase.getId();
             }, PhaseResponseDto::setPreviousPhaseId);
-            mapper.map(phase ->  {
+            mapper.map(phase -> {
                 Phase nextPhase = phase.getNextPhase();
                 return (nextPhase == null) ? null : nextPhase.getId();
             }, PhaseResponseDto::setNextPhaseId);
@@ -68,9 +68,10 @@ public class DtoMapper {
             mapper.map(Ticket::getDescription, TicketResponseDto::setDescription);
             mapper.map(Ticket::getCreationTime, TicketResponseDto::setCreationTime);
             mapper.map(Ticket::getDueTime, TicketResponseDto::setDueTime);
-            mapper.map(Ticket::getPhaseId, TicketResponseDto:: setPhaseId);
+            mapper.map(Ticket::getPhaseId, TicketResponseDto::setPhaseId);
             mapper.map(Ticket::getProjectId, TicketResponseDto::setProjectId);
             mapper.map(Ticket::getAssigneeIds, TicketResponseDto::setAssigneeIds);
+            mapper.map(Ticket::getPriority, TicketResponseDto::setPriority); // Map priority
         });
         modelMapper.typeMap(User.class, UserResponseDto.class).addMappings(mapper -> {
             mapper.map(User::getId, UserResponseDto::setId);
@@ -79,9 +80,7 @@ public class DtoMapper {
         });
     }
 
-
     // membership
-
     public MembershipResponseDto mapMembershipToMembershipResponseDto(Membership membership) {
         return modelMapper.map(membership, MembershipResponseDto.class);
     }
@@ -101,9 +100,7 @@ public class DtoMapper {
         );
     }
 
-
     // notification
-
     public NotificationResponseDto mapNotificationToNotificationResponseDto(Notification notification) {
         return modelMapper.map(notification, NotificationResponseDto.class);
     }
@@ -115,9 +112,7 @@ public class DtoMapper {
                 .toList();
     }
 
-
     // phase
-
     public PhaseResponseDto mapPhaseToPhaseResponseDto(Phase phase) {
         return modelMapper.map(phase, PhaseResponseDto.class);
     }
@@ -138,9 +133,7 @@ public class DtoMapper {
         );
     }
 
-
     // project
-
     public ProjectResponseDto mapProjectToProjectResponseDto(Project project) {
         return modelMapper.map(project, ProjectResponseDto.class);
     }
@@ -149,9 +142,7 @@ public class DtoMapper {
         return new Project(projectPostDto.getName(), projectPostDto.getDescription());
     }
 
-
     // ticket
-
     public TicketResponseDto mapTicketToTicketResponseDto(Ticket ticket) {
         return modelMapper.map(ticket, TicketResponseDto.class);
     }
@@ -164,7 +155,7 @@ public class DtoMapper {
     }
 
     public Ticket mapTicketPostDtoToTicket(TicketPostDto ticketPostDto, UUID phaseId) {
-        return new Ticket(
+        Ticket ticket = new Ticket(
                 ticketPostDto.getTitle(),
                 ticketPostDto.getDescription(),
                 ticketPostDto.getDueTime(),
@@ -172,11 +163,13 @@ public class DtoMapper {
                 phaseId,
                 ticketPostDto.getAssigneeIds()
         );
+        if (ticketPostDto.getPriority() != null) {
+            ticket.setPriority(ticketPostDto.getPriority()); // Map priority from TicketPostDto
+        }
+        return ticket;
     }
 
-
     // user
-
     public UserResponseDto mapUserToUserResponseDto(User user) {
         return modelMapper.map(user, UserResponseDto.class);
     }

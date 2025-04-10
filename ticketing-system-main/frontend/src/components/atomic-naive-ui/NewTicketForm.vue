@@ -1,7 +1,7 @@
 <script setup>
 import { ref, defineEmits, onMounted } from "vue";
 import { useTicketStore } from "../../stores/ticket";
-import { NForm, NButton, NGi, NInput, NFormItemGi, NGrid, NDatePicker, NTransfer, useNotification } from "naive-ui";
+import { NForm, NButton, NGi, NInput, NFormItemGi, NGrid, NDatePicker, NTransfer, NSelect, useNotification } from "naive-ui";
 import { useFetchAgent } from "../../stores/fetchAgent";
 
 const props = defineProps(['projectId']);
@@ -15,7 +15,8 @@ const ticketPostData = ref({
   title: null,
   description: null,
   dueTime: null,
-  assigneeIds: null
+  assigneeIds: null,
+  priority: "MEDIUM" // Default priority
 });
 const rules = {
   title: {
@@ -29,7 +30,13 @@ const rules = {
     message: "Please input description"
   }
 };
-const projectMembers = ref([])
+const projectMembers = ref([]);
+const priorityOptions = [
+  { label: "Low", value: "LOW" },
+  { label: "Medium", value: "MEDIUM" },
+  { label: "High", value: "HIGH" },
+  { label: "Urgent", value: "URGENT" } // New priority option
+];
 
 const getProjectMembers = async () => {
   const response = await fetchAgent.getMembershipsByProjectId(props.projectId);
@@ -43,7 +50,7 @@ const getProjectMembers = async () => {
       }
     }
   }
-}
+};
 
 async function handleCreateButtonClick(e) {
   e.preventDefault();
@@ -57,26 +64,27 @@ async function handleCreateButtonClick(e) {
       if (ticketPostData.value.assigneeIds == null) {
         ticketPostData.value.assigneeIds = [];
       }
-      
+
       const result = await ticketStore.postTicket(ticketPostData.value);
       if (result.isPostSuccessful) {
-        console.log(result)
+        console.log(result);
         emit('closeNewTicketFormSuccesful');
         ticketPostData.value.projectId = null;
         ticketPostData.value.title = null;
         ticketPostData.value.description = null;
         ticketPostData.value.dueTime = null;
         ticketPostData.value.assigneeIds = null;
-        //assignees.value = [];
+        ticketPostData.value.priority = "MEDIUM"; // Reset to default
       } else {
-        sendNotification("Error", result.message)
+        sendNotification("Error", result.message);
       }
     } else {
       console.log(errors);
-      console.log("could not create new project");
+      console.log("could not create new ticket");
     }
   });
-};
+}
+
 function handleCancelButtonClick(e) {
   emit('closeNewTicketFormUnsuccesful');
   ticketPostData.value.projectId = null;
@@ -84,8 +92,9 @@ function handleCancelButtonClick(e) {
   ticketPostData.value.description = null;
   ticketPostData.value.dueTime = null;
   ticketPostData.value.assigneeIds = [];
-  //assignees.value = [];
-};
+  ticketPostData.value.priority = "MEDIUM"; // Reset to default
+}
+
 function sendNotification(_title, _content) {
   notificationAgent.create({
     title: _title,
@@ -95,14 +104,13 @@ function sendNotification(_title, _content) {
 
 onMounted(async () => {
   await getProjectMembers();
-})
+});
 </script>
 
 <template>
   <n-form ref="formRef" :model="ticketPostData" :rules="rules" :size="medium" label-placement="top"
     style="min-width: 300px; width: 50%; max-width: 600px; background-color: #fdfdfd; padding: 25px; border-radius: 5px;">
     <n-grid :span="24" :x-gap="24" :cols="1">
-
       <n-gi :span="24">
         <div style="font-size: 1.5em; font-weight: bold; padding-top: 10px; padding-bottom: 40px;">
           Create Ticket
@@ -114,13 +122,13 @@ onMounted(async () => {
       </n-form-item-gi>
       <n-form-item-gi :span="24" label="Description" path="description">
         <n-input style="border-radius: 5px;" v-model:value="ticketPostData.description" placeholder="Description"
-          type="textarea" :autosize="{
-              minRows: 5,
-              maxRows: 10
-            }" />
+          type="textarea" :autosize="{ minRows: 5, maxRows: 10 }" />
       </n-form-item-gi>
       <n-form-item-gi :span="12" label="Due" path="dueTime">
         <n-date-picker clearable v-model:value="ticketPostData.dueTime" type="datetime" />
+      </n-form-item-gi>
+      <n-form-item-gi :span="12" label="Priority" path="priority">
+        <n-select v-model:value="ticketPostData.priority" :options="priorityOptions" />
       </n-form-item-gi>
       <n-form-item-gi label="Assignees" path="assigneeIds">
         <n-transfer size="large" virtual-scroll ref="transfer" v-model:value="ticketPostData.assigneeIds" :options="projectMembers" />
@@ -131,7 +139,7 @@ onMounted(async () => {
           <n-button type="error" block error strong style="max-width: 125px; border-radius: 5px; box-shadow: 2px 2px 3px lightgrey;" @click="handleCancelButtonClick">
             Cancel
           </n-button>
-          &nbsp;&nbsp;
+            
           <n-button type="primary" block primary strong style="max-width: 125px; border-radius: 5px; box-shadow: 2px 2px 3px lightgrey;" @click="handleCreateButtonClick">
             Create Ticket
           </n-button>

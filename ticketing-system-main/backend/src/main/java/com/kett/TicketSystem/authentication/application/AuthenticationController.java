@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Transactional
-@CrossOrigin(origins = {"http://localhost:10000"}, allowCredentials = "true")
+@CrossOrigin(origins = {"http://localhost:5173"}, allowCredentials = "true")
 @RequestMapping("/authentications")
 public class AuthenticationController {
     private final AuthenticationApplicationService authenticationApplicationService;

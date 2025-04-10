@@ -1,5 +1,6 @@
 package com.kett.TicketSystem.ticket.application.dto;
 
+import com.kett.TicketSystem.ticket.domain.Ticket; // Import for TicketPriority enum
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,4 +21,5 @@ public class TicketPatchDto {
     private LocalDateTime dueTime;
     private UUID phaseId;
     private List<UUID> assigneeIds = new ArrayList<>();
+    private Ticket.TicketPriority priority; // New field for priority
 }

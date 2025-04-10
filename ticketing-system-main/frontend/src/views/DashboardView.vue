@@ -23,6 +23,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
+
 .notification-container {
   margin-top: 20px;
   padding: 10px;

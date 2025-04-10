@@ -172,7 +172,7 @@ public class RestRequestHelper {
             LocalDateTime dueTime,
             List<UUID> assigneeIds
     ) throws Exception {
-        TicketPostDto ticketPostDto = new TicketPostDto(projectId, title, description, dueTime, assigneeIds);
+        TicketPostDto ticketPostDto = new TicketPostDto(projectId, title, description, dueTime, assigneeIds, null);
         MvcResult postResult =
                 mockMvc.perform(
                                 post("/tickets")
@@ -194,7 +194,7 @@ public class RestRequestHelper {
             UUID newPhaseId,
             List<UUID> assigneeIds
     ) throws Exception {
-        TicketPatchDto ticketPatchDto = new TicketPatchDto(title, description, dueTime, newPhaseId, assigneeIds);
+        TicketPatchDto ticketPatchDto = new TicketPatchDto(title, description, dueTime, newPhaseId, assigneeIds, null);
         MvcResult patchResult =
                 mockMvc.perform(
                                 patch("/tickets/" + ticketId)
