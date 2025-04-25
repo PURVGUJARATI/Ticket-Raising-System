@@ -89,4 +89,11 @@ public class TicketController {
         ticketApplicationService.deleteTicketById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+    @GetMapping("/due-today")
+    public ResponseEntity<List<TicketResponseDto>> getDueTodayTicketsForAssignee() {
+        EmailAddress userEmail = EmailAddress.fromString(SecurityContextHolder.getContext().getAuthentication().getName());
+        List<TicketResponseDto> dueTickets = ticketApplicationService.getTicketsDueTodayForAssignee(userEmail);
+        return new ResponseEntity<>(dueTickets, HttpStatus.OK);
+    }
+
 }

@@ -20,7 +20,7 @@ import java.util.UUID;
 
 @RestController
 @Transactional
-@CrossOrigin(origins = {"http://localhost:10000"}, allowCredentials = "true")
+@CrossOrigin(origins = {"http://localhost:5173"}, allowCredentials = "true")
 @RequestMapping("/memberships")
 public class MembershipController {
     private final MembershipApplicationService membershipApplicationService;

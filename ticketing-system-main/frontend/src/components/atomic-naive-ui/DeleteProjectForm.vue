@@ -38,7 +38,8 @@
   function sendNotification(_title, _content) {
     notificationAgent.create({
       title: _title,
-      content: _content
+      content: _content,
+      duration: 5000
     });
   }
 </script>
@@ -48,18 +49,18 @@
     ref="formRef"
     :size="medium"
     label-placement="top"
-    style="min-width: 300px; width: 40%; max-width: 500px; background-color: #fdfdfd; padding: 20px; border-radius: 5px;"
+    style="min-width: 300px; width: 40%; max-width: 500px; background-color: #000; padding: 20px; border-radius: 5px;"
   >
     <n-grid :span="24" :x-gap="24" :cols ="1">
-      <n-gi :span="24">Do you really want to delete this project?</n-gi>
+      <n-gi :span="24" style="color: #fff;">Do you really want to delete this project?</n-gi>
       <n-gi> &nbsp; </n-gi>
       <n-gi :span="24">
         <div style="display: flex; justify-content: flex-end">
-          <n-button block secondary strong style="max-width: 125px; border-radius: 5px; box-shadow: 2px 2px 3px lightgrey;" @click="handleCancelButtonClick">
+          <n-button block secondary strong style="max-width: 125px; border-radius: 5px;background-color: #05cdffe8 ; color: #fff;" @click="handleCancelButtonClick">
             Cancel
           </n-button>
           &nbsp;&nbsp;
-          <n-button type="error" block error strong style="max-width: 125px; border-radius: 5px; box-shadow: 2px 2px 3px lightgrey;" @click="handleDeleteButtonClick">
+          <n-button type="error" block error strong style="max-width: 125px; border-radius: 5px;" @click="handleDeleteButtonClick">
             Delete project
           </n-button>
         </div>

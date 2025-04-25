@@ -52,26 +52,26 @@
 </script>
 
 <template>
-  <n-card style=" max-width: 1000px; border-radius: 5px; background-color: #fdfdfd;" title="Invitations" :bordered="false" size="huge" role="dialog" aria-modal="true">
+  <n-card style=" max-width: 1000px; border-radius: 5px; background-color: #1e1e1e;" title="Invitations" :bordered="false" size="huge" role="dialog" aria-modal="true">
     <div v-for="invitation in unaccceptedMemberships">
       <div style="display: flex; justify-content: space-around; font-size: 1.2em; padding-bottom: 10px;">
         
         <div style="display: flex;">
-          <div style="margin-top: 10px; font-weight: bold;">
+          <div style="margin-top: 10px; font-weight: bold; color: #63e2b7;">
             Project ID:
           </div>
           &nbsp;
-          <div style="margin-top: 10px">
+          <div style="margin-top: 10px; color: #fff;">
             {{ invitation.projectId }}
           </div>
         </div>
 
         <div style="display: flex;">
-          <div style="margin-top: 10px; font-weight: bold;">
+          <div style="margin-top: 10px; font-weight: bold; color: #63e2b7;">
             Role:
           </div>
           &nbsp;
-          <div style="margin-top: 10px; min-width: 67px;">
+          <div style="margin-top: 10px; min-width: 67px; color: #fff;">
             {{ invitation.role }}
           </div>
         </div>
@@ -79,14 +79,14 @@
         <div style="display: flex;">
           <div style="margin-top: 6px;">
             <n-button @click="handleAcceptInvitation(invitation.id)" type="primary" block strong primary
-              style="border-radius: 5px; box-shadow: 2px 2px 3px lightgrey;">
+              style="border-radius: 5px;">
               Accept
             </n-button>
           </div>
           &nbsp;&nbsp;&nbsp;
           <div style="margin-top: 6px;">
             <n-button @click="handleDeclineInvitation(invitation.id)" type="error" block strong primary
-              style="border-radius: 5px; box-shadow: 2px 2px 3px lightgrey;">
+              style="border-radius: 5px; ">
               Decline
             </n-button>
           </div>
@@ -98,7 +98,14 @@
 </template>
 
 <style>
-  .inputEmail:focus {
-    outline: none;
-  }
+.n-card
+{
+  --n-card-color: #000 !important;
+  --n-title-text-color:#63e2b7 !important;
+}
+.inputEmail:focus 
+{
+  outline: none;
+}
+
 </style>

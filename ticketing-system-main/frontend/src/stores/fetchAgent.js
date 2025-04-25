@@ -1,6 +1,5 @@
 import { defineStore } from "pinia";
 import axios from 'axios';
-
 import { useSessionStore } from "./session";
 
 export const useFetchAgent = defineStore("fetchAgent", () => {
@@ -137,7 +136,6 @@ export const useFetchAgent = defineStore("fetchAgent", () => {
     }
   }
 
-
   // projects
   const projectsPath = "/projects";
 
@@ -153,7 +151,7 @@ export const useFetchAgent = defineStore("fetchAgent", () => {
 
   const getProjectById = async (id) => {
     try {
-      const response = await axios.get(projectsPath + "/" + id,  getConfig());
+      const response = await axios.get(projectsPath + "/" + id, getConfig());
       return { isSuccessful: true, data: response.data };
     } catch (error) {
       await handleError(error);
@@ -165,8 +163,7 @@ export const useFetchAgent = defineStore("fetchAgent", () => {
     try {
       const projects = [];
       for (let index in projectIds) {
-        projects.push(await axios.get(projectsPath + "/" + projectIds[index],  getConfig()
-));
+        projects.push(await axios.get(projectsPath + "/" + projectIds[index], getConfig()));
       }
       return { isSuccessful: true, data: projects };
     } catch (error) {
@@ -194,7 +191,6 @@ export const useFetchAgent = defineStore("fetchAgent", () => {
       return { isSuccessful: false, data: error };
     }
   }
-  
 
   // tickets
   const ticketsPath = "/tickets";
@@ -248,7 +244,6 @@ export const useFetchAgent = defineStore("fetchAgent", () => {
       return { isSuccessful: false, data: error };
     }
   }
-
 
   // users
   const usersPath = "/users";
@@ -328,7 +323,16 @@ export const useFetchAgent = defineStore("fetchAgent", () => {
       return { isSuccessful: false, data: error };
     }
   };
-  
+
+  const getTicketStatsByPriority = async () => {
+    try {
+      const response = await axios.get(`${analysisPath}/priority-stats`, getConfig());
+      return { isSuccessful: true, data: response.data };
+    } catch (error) {
+      await handleError(error);
+      return { isSuccessful: false, data: error };
+    }
+  };
 
   const exportCsv = async () => {
     try {
@@ -346,7 +350,6 @@ export const useFetchAgent = defineStore("fetchAgent", () => {
       await sessionStore.logout();
     }
   }
-
 
   return {
     postAuthentication,
@@ -380,6 +383,7 @@ export const useFetchAgent = defineStore("fetchAgent", () => {
     patchUserById,
     getTicketStats,
     getTopUsers,
+    getTicketStatsByPriority, // Added to return object
     exportCsv,
     deleteUserById
   };

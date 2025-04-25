@@ -1,4 +1,5 @@
 <script setup>
+import SignInForm from '../components/atomic-naive-ui/SignInForm.vue';
 </script>
 
 <template>
@@ -8,8 +9,8 @@
       <RouterLink to="/signin">Come back to safety</RouterLink>
     </nav>
     <br>
-    <div style="font-size:25vw;">
-      4<img src="../assets/bonjour.png" alt="bonjour" style="height:1.6ex; display:inline-block">4
-    </div>   
+    <div style="font-size: 25vw;">
+      4<img src="../assets/bonjour.png" alt="bonjour" style="height: 1.6ex; display: inline-block;">4
+    </div>
   </div>
 </template>

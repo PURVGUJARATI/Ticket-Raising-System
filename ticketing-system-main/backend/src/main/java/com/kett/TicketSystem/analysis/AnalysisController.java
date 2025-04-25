@@ -39,4 +39,9 @@ public class AnalysisController {
                 .headers(headers)
                 .body(csvBytes);
     }
-}
+
+    @GetMapping("/priority-stats")
+    public ResponseEntity<Map<String, Long>> getTicketStatsByPriority() {
+        return ResponseEntity.ok(analysisService.getTicketStatsByPriority());
+    }
+} 

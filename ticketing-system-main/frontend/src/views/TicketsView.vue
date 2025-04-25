@@ -11,6 +11,9 @@ import { storeToRefs } from 'pinia';
 import { RouterLink } from 'vue-router';
 
 import EditTicketForm from '../components/atomic-naive-ui/EditTicketForm.vue';
+import NewTicketButton from '../components/atomic-naive-ui/NewTicketButton.vue';
+
+import { toPadding } from 'chart.js/helpers';
 
 const fetchAgent = useFetchAgent();
 const userStore = useUserStore();
@@ -39,7 +42,7 @@ const columns = [
         "div",
         { 
           onClick: () => openEditTicketForm(row.key, row.projectId), 
-          style: { 'cursor': 'pointer' }
+          style: { 'cursor': 'pointer', color: '#63e2b7' } 
         },
         { default: () => row.title }
       );
@@ -62,7 +65,7 @@ const columns = [
         RouterLink,
         { 
           to: { name: "projectDetails", params: { id: row.projectId } },
-          style: { 'text-decoration': 'none' }  
+          style: { 'text-decoration': 'none', color: '#63e2b7' } 
         },
         { default: () => row.projectName }
       );
@@ -97,7 +100,7 @@ const columns = [
     }
   },
   {
-    title: 'Priority', // New column for priority
+    title: 'Priority',
     key: 'priority',
     sorter: (row1, row2) => {
       const order = { 'LOW': 1, 'MEDIUM': 2, 'HIGH': 3, 'URGENT': 4 };
@@ -162,7 +165,7 @@ async function compileTableData() {
       phaseName: phase.name,
       assigneeNames: assigneeNames.toString(),
       assigneeIds: assignees.value.map(assignee => assignee.userId),
-      priority: ticket.priority // Add priority to table data
+      priority: ticket.priority
     });
   }
 
@@ -182,7 +185,6 @@ function reloadPage() {
   window.location.reload(true);
 }
 
-const tableHeight = computed(() => Math.floor((screen.height * 70) / 100));
 
 onMounted(async () => {
   await updateAll();
@@ -191,10 +193,11 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div style="background-color: #ffffff; width: 100%;">
-    <div style="padding-left: 25px; width:85vw;">
-      <h1>Tickets</h1>
-      <n-modal v-model:show="activateEditTicketForm" :trap-focus="false">
+  
+  <div style="background-color: #1e1e1e; width: 100%; color: #fff; padding-bottom: 16px; ">
+    <div style="padding-left: 15px; padding-right: 10px; width: auto;">
+      <h1 style="color: #63e2b7;">Tickets</h1>
+      <n-modal v-model:show="activateEditTicketForm" :trap-focus="false" style="background-color: #2c2c2c; color: #fff;">
         <EditTicketForm 
           :ticketId="selectedTicketId" 
           :projectId="projectIdOfSelectedTicketId" 
@@ -202,19 +205,68 @@ onMounted(async () => {
           @updateTickets="reloadPage" 
         />
       </n-modal>
-      <n-space vertical :size="20">
-        <n-space justify="end">
-        </n-space>
+      <n-space>
         <n-data-table 
           ref="table" 
-          :style="{ height: `${tableHeight}px` }" 
+          :style="{ height: '535px', overflowY: 'auto', backgroundColor: '#2c2c2c', color: '#fff' }"
           :columns="columns" 
           :data="ticketData"
           :single-line="false" 
           :bordered="false" 
           flex-height 
+          :header-props="{ style: 'background-color: #2c2c2c; color: #fff;' }" 
         />
       </n-space>
     </div>
   </div>
+  
 </template>
+
+<style scoped>
+/* Ensure table headers and rows match dark theme */
+:deep(.n-data-table) {
+  background-color: #1e1e1e !important;
+  color: #fff !important;
+  /* border-radius: 15px 15px 15px 15px; */}
+
+:deep(.n-data-table th) {
+  background-color: #1e1e1e !important;
+  color: #fff !important;
+  border-bottom: 1px solid #444 !important;
+  border-right: 1px solid #444 !important;
+}
+
+:deep(.n-data-table td) {
+  background-color: #1e1e1e !important;
+  color: #fff !important;
+  border-bottom: 1px solid #444 !important;
+  border-right: 1px solid #444 !important;
+  
+}
+
+:deep(.n-data-table tr:hover td) {
+  background-color: #333 !important; /* Slight highlight on hover */
+}
+
+/* Modal styling */
+:deep(.n-modal) {
+  background-color: #2c2c2c !important;
+  color: #fff !important;
+}
+
+:deep(.n-modal .n-card) {
+  background-color: #2c2c2c !important;
+  color: #fff !important;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .action-buttons {
+    margin-top: 10px;
+  }
+}
+</style>

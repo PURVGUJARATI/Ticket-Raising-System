@@ -1,19 +1,22 @@
 <template>
-  <div>
-    <h1 style="padding-left: 25px;">Hello, my friend. Welcome to Dashboard.</h1>
-
-    <!-- Notification Section -->
-    <div v-if="ticketStore.notifications.length" class="notification-container">
-      <div v-for="notification in ticketStore.notifications" :key="notification.ticketId" class="notification">
-        🔔 {{ notification.message }}
-      </div>
+  <div class="notification" v-if="ticketStore.notifications.length">
+    <div
+      v-for="note in ticketStore.notifications"
+      :key="note.ticketId"
+      class="notification-container"
+    >
+      <strong>Ticket ID:</strong> {{ note.ticketId }}<br />
+      <strong>Deadline:</strong> {{ note.deadline }}<br />
+      <strong>Message:</strong> {{ note.message }}<br />
+      <strong>Created At:</strong> {{ note.createdAt }}<br />
+      {{ note.message }}
     </div>
   </div>
 </template>
 
 <script setup>
 import { onMounted } from "vue";
-import { useTicketStore } from "@/stores/ticket.js";
+import { useTicketStore } from "../stores/ticket.js";
 
 const ticketStore = useTicketStore();
 

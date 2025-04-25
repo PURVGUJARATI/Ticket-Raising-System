@@ -26,7 +26,7 @@
       />
     </n-modal>
 
-  <n-button @click="handleLeaveProjectButtonClicked" type="error" block error strong style="max-width: 125px; border-radius: 5px; box-shadow: 2px 2px 3px lightgrey;">
+  <n-button @click="handleLeaveProjectButtonClicked" type="error" block error strong style="max-width: 125px; border-radius: 5px;">
     Leave Project
   </n-button>
 </template>

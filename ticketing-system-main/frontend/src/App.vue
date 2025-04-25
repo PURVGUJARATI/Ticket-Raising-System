@@ -26,18 +26,10 @@ onMounted(() => {
 </template>
 
 <style>
-:root {
-  --bg-color: #ffffff;
-  --text-color: #000000;
-  --card-bg: #f5f5f5;
-  --sidebar-bg: linear-gradient(180deg, #4f46e5, #22c1c3);
-  --chart-bg: #ffffff;
-  --primary-color: #4f46e5;
-}
 
 .dark-theme {
-  --bg-color: #121212;
-  --text-color: #e0e0e0;
+  --bg-color: #008bfd;
+  --text-color: #05cdffe8;
   --card-bg: #1e1e1e;
   --sidebar-bg: linear-gradient(180deg, #2c2c2c, #121212);
   --chart-bg: #2c2c2c;
@@ -49,18 +41,6 @@ body {
   padding: 0;
   background-color: var(--bg-color);
   color: var(--text-color);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   transition: background-color 0.3s, color 0.3s;
 }
-
-.app-wrapper {
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  min-height: 100vh;
-}
-::v-deep(.n-menu-item-content:hover) {
-  background-color: transparent !important;
-}
-
-
 </style>

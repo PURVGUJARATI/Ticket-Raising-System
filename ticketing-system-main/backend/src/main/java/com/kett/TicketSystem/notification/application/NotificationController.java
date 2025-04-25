@@ -16,7 +16,7 @@ import java.util.UUID;
 
 @RestController
 @Transactional
-@CrossOrigin(origins = {"http://localhost:10000"}, allowCredentials = "true")
+@CrossOrigin(origins = {"http://localhost:5173"}, allowCredentials = "true")
 @RequestMapping("/notifications")
 public class NotificationController {
     private final NotificationApplicationService notificationApplicationService;

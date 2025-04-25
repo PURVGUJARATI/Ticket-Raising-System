@@ -27,7 +27,7 @@
       />
     </n-modal>
 
-  <n-button @click="handleInvitationsButtonClicked" type="info" block primary strong style="max-width: 125px; border-radius: 5px; box-shadow: 2px 2px 3px lightgrey;">
+  <n-button @click="handleInvitationsButtonClicked" type="info" block primary strong style="max-width: 125px; border-radius: 5px;">
     View Invitations
   </n-button>
 </template>

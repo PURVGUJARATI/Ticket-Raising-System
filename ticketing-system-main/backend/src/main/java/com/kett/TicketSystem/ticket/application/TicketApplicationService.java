@@ -7,25 +7,37 @@ import com.kett.TicketSystem.ticket.application.dto.TicketPostDto;
 import com.kett.TicketSystem.ticket.application.dto.TicketResponseDto;
 import com.kett.TicketSystem.ticket.domain.Ticket;
 import com.kett.TicketSystem.ticket.domain.TicketDomainService;
+import com.kett.TicketSystem.user.domain.User;
+import com.kett.TicketSystem.user.repository.UserRepository;
+import com.kett.TicketSystem.ticket.repository.TicketRepository;
+import com.kett.TicketSystem.user.domain.exceptions.UserException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class TicketApplicationService {
     private final TicketDomainService ticketDomainService;
     private final DtoMapper dtoMapper;
+    private final UserRepository userRepository;
+    private final TicketRepository ticketRepository;
 
     @Autowired
     public TicketApplicationService(
             TicketDomainService ticketDomainService,
-            DtoMapper dtoMapper
+            DtoMapper dtoMapper,
+            UserRepository userRepository,
+            TicketRepository ticketRepository
     ) {
         this.ticketDomainService = ticketDomainService;
         this.dtoMapper = dtoMapper;
+        this.userRepository = userRepository;
+        this.ticketRepository = ticketRepository;
     }
 
     @PreAuthorize("hasAnyAuthority(" +
@@ -89,5 +101,19 @@ public class TicketApplicationService {
             "'ROLE_PROJECT_MEMBER_'.concat(@ticketDomainService.getProjectIdByTicketId(#id)))")
     public void deleteTicketById(UUID id) {
         ticketDomainService.deleteTicketById(id);
+    }
+
+    public List<TicketResponseDto> getTicketsDueTodayForAssignee(EmailAddress emailAddress) {
+        User user = userRepository.findByEmailEquals(emailAddress) // Use injected userRepository
+                .orElseThrow(() -> new UserException("No user found with email: " + emailAddress));
+        UUID userId = user.getId();
+        List<Ticket> tickets = ticketDomainService.getTicketsByAssigneeId(userId);
+
+        LocalDate today = LocalDate.now();
+
+        return tickets.stream()
+                .filter(ticket -> ticket.getDueTime() != null && ticket.getDueTime().toLocalDate().isEqual(today))
+                .map(dtoMapper::mapTicketToTicketResponseDto)
+                .collect(Collectors.toList());
     }
 }

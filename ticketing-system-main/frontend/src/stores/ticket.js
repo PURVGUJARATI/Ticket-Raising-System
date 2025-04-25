@@ -64,20 +64,30 @@ export const useTicketStore = defineStore("ticket", () => {
 
   // Function to check deadlines
   const checkDeadlines = () => {
-    const today = new Date().toISOString().split("T")[0]; // Get today's date (YYYY-MM-DD)
+    const today = new Date().toISOString().split("T")[0];
+    const userId = localStorage.getItem("userId"); // assuming you store logged-in user ID
+  
     notifications.value = tickets.value
-      .filter(ticket => ticket.dueTime === today)
+      .filter(ticket => {
+        const dueDate = ticket.dueTime?.split("T")[0];
+        return (
+          dueDate === today &&
+          ticket.assigneeIds?.includes(userId)
+        );
+      })
       .map(ticket => ({
-        message: `📌 Deadline today for ticket: ${ticket.title}`,
+        message: `📌 Today is the deadline for ticket: ${ticket.title}`,
         ticketId: ticket.id
       }));
   };
+  
 
   // Automatically check deadlines every 60 seconds
   onMounted(() => {
     checkDeadlines();
-    setInterval(checkDeadlines, 60000);
+    setInterval(checkDeadlines, 6000);
   });
+  
 
   return {
     tickets,

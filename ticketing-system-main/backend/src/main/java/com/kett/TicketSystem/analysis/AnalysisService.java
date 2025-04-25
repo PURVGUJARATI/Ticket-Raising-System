@@ -98,4 +98,14 @@ public class AnalysisService {
     
         return csv.toString();
     }    
+
+    public Map<String, Long> getTicketStatsByPriority() {
+        List<Ticket> tickets = ticketRepository.findAll();
+        return tickets.stream()
+            .filter(ticket -> ticket.getPriority() != null)
+            .collect(Collectors.groupingBy(
+                ticket -> ticket.getPriority().toString().toUpperCase(),
+                Collectors.counting()
+            ));
+    }
 }
