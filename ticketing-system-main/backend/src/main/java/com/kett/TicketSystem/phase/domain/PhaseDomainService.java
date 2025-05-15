@@ -255,13 +255,13 @@ public class PhaseDomainService {
         projectDataOfPhaseRepository.save(new ProjectDataOfPhase(defaultProjectCreatedEvent.getProjectId()));
 
         Phase backlog = new Phase(defaultProjectCreatedEvent.getProjectId(), "BACKLOG", null, null);
-        Phase doing = new Phase(defaultProjectCreatedEvent.getProjectId(), "DOING", null, null);
+        Phase assigned = new Phase(defaultProjectCreatedEvent.getProjectId(), "ASSIGNED", null, null);
         Phase review = new Phase(defaultProjectCreatedEvent.getProjectId(), "REVIEW", null, null);
         Phase done = new Phase(defaultProjectCreatedEvent.getProjectId(), "DONE", null, null);
 
         this.createPhase(done, null);
         this.createPhase(review, null);
-        this.createPhase(doing, null);
+        this.createPhase(assigned, null);
         this.createPhase(backlog, null);
     }
 

@@ -49,6 +49,15 @@
       content: _content
     });
   }
+
+  const projectNameById = computed(() => {
+    const result = unaccacceptedMemberships.value.reduce((acc, invitation) => {
+        acc[invitation.projectId] = invitation.projectName || 'Unnamed Project';
+        return acc;
+    }, {});
+    console.log('projectNameById:', JSON.stringify(result, null, 2));
+    return result;
+});
 </script>
 
 <template>
@@ -58,11 +67,11 @@
         
         <div style="display: flex;">
           <div style="margin-top: 10px; font-weight: bold; color: #63e2b7;">
-            Project ID:
+            Project Name:
           </div>
           &nbsp;
           <div style="margin-top: 10px; color: #fff;">
-            {{ invitation.projectId }}
+            {{ invitation.projectName || 'Missing' }}          
           </div>
         </div>
 

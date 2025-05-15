@@ -1,6 +1,5 @@
 package com.kett.TicketSystem.ticket.domain.consumedData;
 
-
 import lombok.*;
 
 import javax.persistence.*;

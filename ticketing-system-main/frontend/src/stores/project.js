@@ -31,7 +31,6 @@ export const useProjectStore = defineStore("project", () => {
 
   const updateProjectsByAcceptedMemberships = async () => {
     const projectIds = membershipStore.getAcceptedMembershipsProjectIds();
-
     const newProjects = [];
     for (let index in projectIds) {
       const getProjectResponse = await fetchAgent.getProjectById(projectIds[index]);
@@ -41,7 +40,6 @@ export const useProjectStore = defineStore("project", () => {
         console.log(getProjectResponse.data.response.data);
       }
     }
-
     projects.value = [];
     for (let i in newProjects) {
       projects.value.push(newProjects[i]);

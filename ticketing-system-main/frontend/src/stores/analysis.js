@@ -6,7 +6,7 @@ import axios from "axios";
 const analysisPath = "/api/analysis";
 
 export const useAnalysisStore = defineStore("analysis", () => {
-  const ticketStats = ref({ totalTickets: 0, resolvedTickets: 0 });
+  const ticketStats = ref({ Ticketsduein24: 0, openTickets: 0 ,resolvedTickets: 0, overdueTickets: 0, unassignedTickets: 0, urgentTickets: 0 });
   const topUsers = ref([]);
   const tickets = ref([]);
   const ticketStatsByPriority = ref({ LOW: 0, MEDIUM: 0, HIGH: 0, URGENT: 0 }); // New ref for priority stats
@@ -106,17 +106,20 @@ export const useAnalysisStore = defineStore("analysis", () => {
       console.log("🔍 Parsed JSON:", tickets);
 
       // ✅ Generate new CSV with required columns
-      let csvContent = "Assignee Name,Ticket Name,Phase,Priority,Created At,Resolved At\n";
+      let csvContent = "Title,Description,Project Name,Assignee Name,Phase,Priority,Due Date,Created At,Resolved At\n";
 
       tickets.forEach(ticket => {
-        const assigneeName = ticket["Assignee Name"] || "Unassigned";
         const ticketName = ticket["Title"] || "No Title";
+        const ticketdescription = ticket["Description"] || "No Description";
+        const projectName = ticket["Project Name"] || "Unknown Project"
+        const assigneeName = ticket["Assignee Name"] || "Unassigned";
         const phase = ticket["Phase"] || "Unknown";
         const Priority = ticket["Priority"] || "Unknown";
+        const dueDate = ticket["Due Date"] || "N/A";
         const createdAt = ticket["Created At"] || "N/A";
         const resolvedAt = ticket["Resolved At"] || "Not Resolved";
 
-        csvContent += `"${assigneeName}","${ticketName}","${phase}","${Priority}","${createdAt}","${resolvedAt}"\n`;
+        csvContent += `"${ticketName}","${ticketdescription}","${projectName}","${assigneeName}","${phase}","${Priority}","${dueDate}","${createdAt}","${resolvedAt}"\n`;
       });
 
       // ✅ Download the file

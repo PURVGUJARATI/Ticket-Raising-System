@@ -334,6 +334,35 @@ export const useFetchAgent = defineStore("fetchAgent", () => {
     }
   };
 
+  const getNotifications = async (email) => {
+    try {
+      if (!email) {
+        throw new Error('Email parameter is required for /notifications');
+      }
+      const response = await axios.get(`/notifications?email=${encodeURIComponent(email)}`, getConfig());
+      return { isSuccessful: true, data: response.data };
+    } catch (error) {
+      console.error('getNotifications error:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+        headers: error.config?.headers
+      });
+      return { isSuccessful: false, data: error };
+    }
+  };
+  
+  const patchNotification = async (notificationId, patchData) => {
+    try {
+      const response = await axios.patch(`/notifications/${notificationId}`, patchData, getConfig());
+      return { isSuccessful: true, data: response.data };
+    } catch (error) {
+      console.error(error);
+      return { isSuccessful: false, data: error };
+    }
+  };
+  
+
   const exportCsv = async () => {
     try {
       const response = await axios.get(`${analysisPath}/export-csv`, { ...getConfig(), responseType: 'blob' });
@@ -383,7 +412,9 @@ export const useFetchAgent = defineStore("fetchAgent", () => {
     patchUserById,
     getTicketStats,
     getTopUsers,
-    getTicketStatsByPriority, // Added to return object
+    getTicketStatsByPriority,
+    getNotifications,
+    patchNotification,
     exportCsv,
     deleteUserById
   };

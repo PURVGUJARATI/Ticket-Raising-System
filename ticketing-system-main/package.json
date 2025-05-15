@@ -1,6 +1,8 @@
 {
   "dependencies": {
+    "@vicons/ionicons5": "^0.13.0",
     "chart.js": "^4.4.8",
-    "html2canvas": "^1.4.1"
+    "html2canvas": "^1.4.1",
+    "naive-ui": "^2.41.0"
   }
 }

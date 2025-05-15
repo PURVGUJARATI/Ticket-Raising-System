@@ -26,7 +26,7 @@ public class AnalysisController {
         return ResponseEntity.ok(analysisService.getTopUsers());
     }
 
-    @GetMapping("/export-csv") // ✅ Make CSV export public
+    @GetMapping("/export-csv") 
     public ResponseEntity<byte[]> exportCsv() {
         String csvData = analysisService.exportCsv();
         byte[] csvBytes = csvData.getBytes();

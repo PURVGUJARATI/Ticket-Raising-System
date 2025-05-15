@@ -19,4 +19,5 @@ public class MembershipResponseDto {
     private UUID userId;
     private Role role;
     private State state;
+    private String projectName;
 }

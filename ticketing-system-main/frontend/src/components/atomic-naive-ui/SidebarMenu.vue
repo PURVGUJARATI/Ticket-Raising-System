@@ -56,7 +56,7 @@ function renderIcon(icon) {
     bordered
     collapse-mode="width"
     :collapsed-width="64"
-    :width="170"
+    :width="160"
     show-trigger
     :collapsed="collapsed"
     @collapse="collapsed = true"
@@ -159,7 +159,7 @@ function renderIcon(icon) {
 
 /* Sidebar styling */
 .custom-sidebar {
-  background: linear-gradient(180deg, #2c98f0, #058636);
+  background: linear-gradient(180deg, #288ad9, #058636);
   padding: 10px 0 10px 8px; /* Padding for the sidebar */
   /* border-radius: 0 15px 15px 0; Rounded corners */
   z-index: 10;

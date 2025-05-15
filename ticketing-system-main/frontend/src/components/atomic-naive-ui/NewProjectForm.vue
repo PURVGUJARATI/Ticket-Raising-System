@@ -55,7 +55,7 @@ function sendNotification(_title, _content) {
   notificationAgent.create({
     title: _title,
     content: _content,
-    duration: 5000,
+    duration: 3000,
   });
 }
 </script>

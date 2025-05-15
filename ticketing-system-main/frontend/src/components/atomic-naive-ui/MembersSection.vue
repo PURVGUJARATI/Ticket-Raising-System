@@ -97,3 +97,10 @@
     label: option.name
   }))
 </script>
+
+<style scoped>
+:deep(.n-avatar)
+{
+  --n-merged-color: #3E6E6E;
+}
+</style>

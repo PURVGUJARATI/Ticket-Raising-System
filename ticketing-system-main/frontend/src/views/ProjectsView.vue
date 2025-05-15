@@ -9,31 +9,25 @@ import InvitationsButton from '../components/atomic-naive-ui/InvitationsButton.v
 import NewProjectForm from '../components/atomic-naive-ui/NewProjectForm.vue';
 import { useMembershipStore } from '../stores/membership';
 
-// Store setup
 const projectStore = useProjectStore();
 const { projects } = storeToRefs(projectStore);
 const membershipStore = useMembershipStore();
 const { memberships } = storeToRefs(membershipStore);
 
-// Show modal
 const showNewProjectModal = ref(false);
 
-// Check if there are any open invitations
 function invitationsExist() {
   return memberships.value.some(m => m.state === 'OPEN');
 }
 
-// Update projects list
 async function updateProjects() {
   await projectStore.updateProjectsByAcceptedMemberships();
 }
 
-// Open modal
 function handleNewProjectButtonClicked() {
   showNewProjectModal.value = true;
 }
 
-// Close modal
 function handleModalClose() {
   showNewProjectModal.value = false;
 }
@@ -93,7 +87,7 @@ function handleModalClose() {
                   </n-ellipsis>
                   <template #footer>
                     <p class="creation-time">
-                      Created: {{ new Date(project.creationTime).toLocaleString() }}
+                      Created : {{ new Date(project.creationTime).toLocaleString() }}
                     </p>
                   </template>
                 </n-card>
@@ -128,12 +122,12 @@ body {
 /* Main container styling */
 .projects-container {
   padding: 30px;
-  width: 100%;
+  width: 90%;
   max-width: 800px;
   margin: 30px auto;
   background-color: #1e1e1e; /* Consistent dark base */
-  border-radius: 10px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3); /* Enhanced shadow */
+  /* border-radius: 10px; */
+  box-shadow: 0 0 5px #f0f0f0; /* Enhanced shadow */
   color: #fff; /* Ensure text is white */
 }
 
@@ -168,8 +162,9 @@ body {
   align-items: center;
   height: 100%;
   background-color: #2c2c2c; /* Darker card background */
+  border-color: #63e2b7 !important;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.2); /* Subtle shadow */
   padding: 20px;
   color: #fff; /* White text */
 }
@@ -187,7 +182,8 @@ body {
 .project-card {
   height: 200px;
   background-color: #2c2c2c; /* Consistent with other dark elements */
-  border-radius: 10px;
+  border-color: #63e2b7 !important;
+  /* border-radius: 10px; */
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Enhanced shadow */
   transition: transform 0.2s, box-shadow 0.3s; /* Added box-shadow transition */
   color: #fff; /* White text */
@@ -244,13 +240,18 @@ body {
 }
 
 /* Responsive design */
-@media (max-width: 768px) {
+@media (max-width: 700px) {
   .header {
     flex-direction: column;
     align-items: flex-start;
   }
   .action-buttons {
     margin-top: 10px;
+  }
+  .project-card {
+    padding: 20px;
+    width: fit-content;
+    margin: 10px auto;
   }
 }
 

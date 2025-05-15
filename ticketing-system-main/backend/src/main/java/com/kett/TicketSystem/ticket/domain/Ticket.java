@@ -54,15 +54,20 @@ public class Ticket {
     @Column(name = "status")
     private TicketStatus status;
 
+    @Column(name = "resolved_at")
     private LocalDateTime resolvedAt;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "priority")
-    private TicketPriority priority; // New field for priority
+    private TicketPriority priority;
 
-    // Enum for Ticket Priority
+    // Enums
+    public enum TicketStatus {
+        OPEN, IN_PROGRESS, DONE, CLOSED
+    }
+
     public enum TicketPriority {
-        LOW, MEDIUM, HIGH,URGENT
+        LOW, MEDIUM, HIGH, URGENT
     }
 
     // Constructor
@@ -74,11 +79,11 @@ public class Ticket {
         this.setPhaseId(phaseId);
         this.setProjectId(projectId);
         this.setAssigneeIds(assigneeIds);
-        this.status = TicketStatus.OPEN; // Default status
-        this.priority = TicketPriority.MEDIUM; // Default priority
+        this.status = TicketStatus.OPEN;
+        this.priority = TicketPriority.MEDIUM;
     }
 
-    // Setters with validation
+    // Validation and setters
     public void setTitle(String title) {
         if (title == null || title.isEmpty()) {
             throw new TicketException("Title must not be null or empty");
@@ -116,15 +121,16 @@ public class Ticket {
         return this.assigneeIds.contains(assigneeId);
     }
 
-    // Status handling
     public TicketStatus getStatus() {
         return status;
     }
 
     public void setStatus(TicketStatus status) {
         this.status = status;
-        if (status == TicketStatus.RESOLVED) {
+        if (status == TicketStatus.DONE) {
             this.resolvedAt = LocalDateTime.now();
+        } else {
+            this.resolvedAt = null;
         }
     }
 
@@ -132,8 +138,12 @@ public class Ticket {
         return resolvedAt;
     }
 
+    public void setResolvedAt(LocalDateTime resolvedAt) {
+        this.resolvedAt = resolvedAt;
+    }
+
     public boolean isResolved() {
-        return this.status == TicketStatus.RESOLVED;
+        return this.status == TicketStatus.DONE;
     }
 
     public long getResolutionTimeInHours() {
@@ -144,10 +154,9 @@ public class Ticket {
     }
 
     public UUID getAssigneeId() {
-        return assigneeIds.isEmpty() ? null : assigneeIds.get(0); // Return the first assignee (or null if none)
+        return assigneeIds.isEmpty() ? null : assigneeIds.get(0);
     }
 
-    // Priority handling
     public TicketPriority getPriority() {
         return priority;
     }
@@ -158,4 +167,5 @@ public class Ticket {
         }
         this.priority = priority;
     }
+
 }

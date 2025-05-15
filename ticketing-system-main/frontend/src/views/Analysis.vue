@@ -4,10 +4,10 @@ import { Chart, registerables } from "chart.js";
 import { useAnalysisStore } from "../stores/analysis";
 import html2canvas from "html2canvas";
 
+
 Chart.register(...registerables);
 
 const analysisStore = useAnalysisStore();
-
 const chartInstance1 = ref(null); // For the ticket status pie/doughnut chart
 const chartInstance2 = ref(null); // For the priority-based pie/doughnut chart
 const selectedChartType1 = ref("pie"); // Chart type for ticket status
@@ -164,11 +164,27 @@ watch(selectedChartType2, () => {
     <!-- Top Stats -->
     <div class="top-container">
       <div class="stats-box">
-        <h2>Total Tickets</h2>
-        <p>{{ analysisStore.ticketStats.totalTickets }}</p>
+        <h4>Overdue Tickets</h4>
+        <p>{{ analysisStore.ticketStats.overdueTickets }}</p>
       </div>
       <div class="stats-box">
-        <h2>Resolved Tickets</h2>
+        <h4>Due In 24 hour</h4>
+        <p>{{ analysisStore.ticketStats.Ticketsduein24 }}</p>
+      </div>
+      <div class="stats-box">
+        <h4>Open Tickets</h4>
+        <p>{{ analysisStore.ticketStats.openTickets }}</p>
+      </div>
+      <div class="stats-box">
+        <h4>Urgent Open Tickets</h4>
+        <p>{{ analysisStore.ticketStats.urgentTickets }}</p>
+      </div>
+      <div class="stats-box">
+        <h4>Unassigned Tickets</h4>
+        <p>{{ analysisStore.ticketStats.unassignedTickets }}</p>
+      </div>
+      <div class="stats-box">
+        <h4>Resolved Tickets</h4>
         <p>{{ analysisStore.ticketStats.resolvedTickets }}</p>
       </div>
     </div>
@@ -216,9 +232,10 @@ watch(selectedChartType2, () => {
   width: 100%;
   /* max-width: 1200px; */
   margin: 0.1px auto;
-  padding: 32.2px;
+  padding: 32.5px;
+  padding-bottom: 16px;
   background-color: #1e1e1e; /* Dark background */
-  color: #fff; /* White text */
+  color: #fff;
 }
 
 .top-container {
@@ -226,7 +243,7 @@ watch(selectedChartType2, () => {
   flex-direction: row;
   justify-content: space-between;
   width: 100%;
-  gap: 20px;
+  gap: 10px;
   margin-bottom: 30px;
 }
 
@@ -234,8 +251,9 @@ watch(selectedChartType2, () => {
   flex: 1;
   background: #2c2c2c; /* Darker card background */
   padding: 20px;
+  margin-top: 0px;
   text-align: center;
-  border-radius: 10px;
+  /* border-radius: 10px; */
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3); /* Enhanced shadow */
   font-size: 1.0rem;
 }
@@ -243,7 +261,7 @@ watch(selectedChartType2, () => {
 .charts-container {
   color: #fff;
   display: flex;
-  gap: 20px;
+  gap: 10px;
   width: 100%;
   flex-wrap: wrap;
 }
@@ -257,10 +275,11 @@ watch(selectedChartType2, () => {
 
 .chart-container {
   position: relative;
-  height: 300px;
-  width: 100%;
-  margin-top: 15px;
+  height: 335px;
+  width: 380px; /* LIMIT WIDTH */
+  margin: 15px auto; /* Center it */
 }
+
 
 .no-data-message {
   position: absolute;
@@ -323,7 +342,7 @@ strong {
 .floating-buttons {
   position: fixed;
   top: 20px;
-  right: 100px;
+  right: 120px;
   z-index: 1000;
   display: flex;
   gap: 12px;
@@ -356,8 +375,9 @@ strong {
   }
 
   .floating-buttons {
-    flex-direction: column;
-    right: 10px;
+    flex-direction: row;
+    right: 100px;
+    top: 16px;
   }
 }
 
@@ -366,4 +386,33 @@ strong {
     min-width: 100%;
   }
 }
+
+@media (max-width: 1280px) {
+  .top-container,
+  .charts-container {
+    flex-direction: row;
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+
+  .stats-box {
+    min-width: calc(1-2% - 10px)
+  }
+
+  .floating-buttons {
+    flex-direction: row;
+    right: 100px;
+    top: 16px;
+  }
+  .charts-container{
+    padding-bottom: 63px;
+  }
+}
+
+@media (max-width: 600px) {
+  .stats-box {
+    min-width: 100%;
+  }
+}
+
 </style>

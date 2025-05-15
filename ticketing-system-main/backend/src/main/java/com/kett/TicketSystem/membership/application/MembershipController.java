@@ -7,6 +7,7 @@ import com.kett.TicketSystem.membership.application.dto.MembershipPutRoleDto;
 import com.kett.TicketSystem.membership.application.dto.MembershipPutStateDto;
 import com.kett.TicketSystem.membership.application.dto.MembershipPostDto;
 import com.kett.TicketSystem.membership.application.dto.MembershipResponseDto;
+import com.kett.TicketSystem.project.repository.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,12 +25,16 @@ import java.util.UUID;
 @RequestMapping("/memberships")
 public class MembershipController {
     private final MembershipApplicationService membershipApplicationService;
+    private final ProjectRepository projectRepository;
 
     @Autowired
-    public MembershipController(MembershipApplicationService membershipApplicationService) {
+    public MembershipController(
+            MembershipApplicationService membershipApplicationService,
+            ProjectRepository projectRepository
+    ) {
         this.membershipApplicationService = membershipApplicationService;
+        this.projectRepository = projectRepository;
     }
-
 
     @GetMapping("/{id}")
     public ResponseEntity<MembershipResponseDto> getMembershipById(@PathVariable UUID id) {
@@ -43,7 +48,6 @@ public class MembershipController {
             @RequestParam(name = "project-id", required = false) UUID projectId,
             @RequestParam(name = "email", required = false) String email
     ) {
-        // TODO: What if another parameter gets added? This is too dirty.
         if (userId != null && projectId != null
             || userId != null && email != null
             || projectId != null && email != null) {
@@ -57,6 +61,16 @@ public class MembershipController {
             membershipResponseDtos = membershipApplicationService.getMembershipsByProjectId(projectId);
         } else if (email != null) {
             membershipResponseDtos = membershipApplicationService.getMembershipsByEmail(EmailAddress.fromString(email));
+            // Enrich with project name
+            for (MembershipResponseDto dto : membershipResponseDtos) {
+                try {
+                    String projectName = projectRepository.findNameById(dto.getProjectId());
+                    dto.setProjectName(projectName != null ? projectName : "Unknown Project");
+                } catch (Exception e) {
+                    System.err.println("Error fetching project name for " + dto.getProjectId() + ": " + e.getMessage());
+                    dto.setProjectName("Unknown Project");
+                }
+            }
         } else {
             throw new NoParametersException("cannot query if no parameters are specified");
         }

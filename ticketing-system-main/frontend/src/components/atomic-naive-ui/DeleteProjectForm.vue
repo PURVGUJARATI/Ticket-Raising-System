@@ -36,12 +36,12 @@
     emit('closeProjectForm');
   };
   function sendNotification(_title, _content) {
-    notificationAgent.create({
-      title: _title,
-      content: _content,
-      duration: 5000
-    });
-  }
+  notificationAgent.create({
+    title: _title,
+    content: _content,
+    duration: 3000,
+  });
+}
 </script>
 
 <template>

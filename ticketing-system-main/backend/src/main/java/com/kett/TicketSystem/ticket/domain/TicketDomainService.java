@@ -6,10 +6,12 @@ import com.kett.TicketSystem.common.exceptions.NoProjectFoundException;
 import com.kett.TicketSystem.membership.domain.events.MembershipAcceptedEvent;
 import com.kett.TicketSystem.membership.domain.events.MembershipDeletedEvent;
 import com.kett.TicketSystem.common.exceptions.InvalidProjectMembersException;
+import com.kett.TicketSystem.phase.domain.Phase;
 import com.kett.TicketSystem.phase.domain.events.PhaseCreatedEvent;
 import com.kett.TicketSystem.phase.domain.events.PhaseDeletedEvent;
 import com.kett.TicketSystem.common.exceptions.UnrelatedPhaseException;
 import com.kett.TicketSystem.phase.domain.events.PhasePositionUpdatedEvent;
+import com.kett.TicketSystem.phase.repository.PhaseRepository;
 import com.kett.TicketSystem.project.domain.events.DefaultProjectCreatedEvent;
 import com.kett.TicketSystem.project.domain.events.ProjectCreatedEvent;
 import com.kett.TicketSystem.project.domain.events.ProjectDeletedEvent;
@@ -30,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -40,6 +43,7 @@ public class TicketDomainService {
     private final MembershipDataOfTicketRepository membershipDataOfTicketRepository;
     private final PhaseDataOfTicketRepository phaseDataOfTicketRepository;
     private final UserDataOfTicketRepository userDataOfTicketRepository;
+    private final PhaseRepository phaseRepository; // Add this line
 
     @Autowired
     public TicketDomainService(
@@ -48,7 +52,8 @@ public class TicketDomainService {
             ProjectDataOfTicketRepository projectDataOfTicketRepository,
             MembershipDataOfTicketRepository membershipDataOfTicketRepository,
             PhaseDataOfTicketRepository phaseDataOfTicketRepository,
-            UserDataOfTicketRepository userDataOfTicketRepository
+            UserDataOfTicketRepository userDataOfTicketRepository, 
+            PhaseRepository phaseRepository
     ) {
         this.ticketRepository = ticketRepository;
         this.eventPublisher = eventPublisher;
@@ -56,6 +61,7 @@ public class TicketDomainService {
         this.membershipDataOfTicketRepository = membershipDataOfTicketRepository;
         this.phaseDataOfTicketRepository = phaseDataOfTicketRepository;
         this.userDataOfTicketRepository = userDataOfTicketRepository;
+        this.phaseRepository = phaseRepository;
     }
 
     // create
@@ -167,19 +173,33 @@ public class TicketDomainService {
         if (dueTime != null) {
             ticket.setDueTime(dueTime);
         }
-        UUID oldPhaseId = null;
         if (phaseId != null) {
             if (!phaseBelongsToProject(phaseId, ticket.getProjectId())) {
                 throw new UnrelatedPhaseException(
-                        "The ticket with id: " + ticket.getId() +
-                        " belongs to the project with id: " + ticket.getProjectId() + ". " +
-                        "But the new phase with id: " + phaseId +
-                        " does not."
+                    "The ticket with id: " + ticket.getId() +
+                    " belongs to the project with id: " + ticket.getProjectId() + ". " +
+                    "But the new phase with id: " + phaseId + " does not."
                 );
             }
-            oldPhaseId = ticket.getPhaseId();
+
+            UUID oldPhaseId = ticket.getPhaseId();
             ticket.setPhaseId(phaseId);
+
+            // Build phaseMap from repository
+            List<Phase> phases = phaseRepository.findByProjectId(ticket.getProjectId());
+            Map<UUID, String> phaseMap = phases.stream()
+                .collect(Collectors.toMap(Phase::getId, Phase::getName));
+
+            String phaseName = phaseMap.get(phaseId);
+
+            if ("DONE".equalsIgnoreCase(phaseName)) {
+                ticket.setResolvedAt(LocalDateTime.now());
+            } else {
+                ticket.setResolvedAt(null);
+            }
         }
+
+
         if (assigneeIds != null) {
             if (!allAssigneesAreProjectMembers(ticket.getProjectId(), assigneeIds)) {
                 throw new InvalidProjectMembersException(
@@ -195,6 +215,7 @@ public class TicketDomainService {
 
         ticketRepository.save(ticket);
         if (phaseId != null) {
+            UUID oldPhaseId = ticket.getPhaseId();
             eventPublisher.publishEvent(new TicketPhaseUpdatedEvent(ticket.getId(), ticket.getProjectId(), oldPhaseId, phaseId));
         }
     }

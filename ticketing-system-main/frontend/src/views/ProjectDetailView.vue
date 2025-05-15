@@ -156,6 +156,8 @@ onMounted(async () => {
   overflow: auto;
   white-space: nowrap;
   background-color: #1e1e1e;
+  padding-right: 40px;
+
 }
 
 .column {

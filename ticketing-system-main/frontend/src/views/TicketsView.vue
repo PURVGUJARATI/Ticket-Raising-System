@@ -11,7 +11,6 @@ import { storeToRefs } from 'pinia';
 import { RouterLink } from 'vue-router';
 
 import EditTicketForm from '../components/atomic-naive-ui/EditTicketForm.vue';
-import NewTicketButton from '../components/atomic-naive-ui/NewTicketButton.vue';
 
 import { toPadding } from 'chart.js/helpers';
 
@@ -100,13 +99,35 @@ const columns = [
     }
   },
   {
-    title: 'Priority',
-    key: 'priority',
-    sorter: (row1, row2) => {
-      const order = { 'LOW': 1, 'MEDIUM': 2, 'HIGH': 3, 'URGENT': 4 };
-      return order[row1.priority] - order[row2.priority];
-    }
+  title: 'Priority',
+  key: 'priority',
+  sorter: (row1, row2) => {
+    const order = { 'LOW': 1, 'MEDIUM': 2, 'HIGH': 3, 'URGENT': 4 };
+    return order[row1.priority] - order[row2.priority];
+  },
+  render(row) {
+    const colorMap = {
+      'LOW': '#2ecc71',      // green
+      'MEDIUM': '#3498db',   // orange
+      'HIGH': '#f1c40f',     // red
+      'URGENT': '#e74c3c'    // purple
+    };
+    return h(
+      'span',
+      {
+        style: {
+          backgroundColor: colorMap[row.priority] || '#ccc',
+          color: '#fff',
+          padding: '4px 8px',
+          borderRadius: '8px',
+          fontWeight: 'bold',
+          fontSize: '12px'
+        }
+      },
+      row.priority
+    );
   }
+}
 ];
 
 function openEditTicketForm(ticketId, projectId) {
@@ -222,24 +243,44 @@ onMounted(async () => {
   
 </template>
 
+<style>
+.n-popover:not(.n-popover--raw) {
+    background-color: #2c2c2c !important;
+}
+
+.n-checkbox .n-checkbox__label {
+  color: #fff !important;
+}
+
+.n-button.n-button--default-type.n-button--tiny-type
+{
+  color: #fff !important;
+}
+</style>
+
 <style scoped>
 /* Ensure table headers and rows match dark theme */
-:deep(.n-data-table) {
+.n-data-table {
   background-color: #1e1e1e !important;
   color: #fff !important;
-  /* border-radius: 15px 15px 15px 15px; */}
+  /* border-radius: 10px 10px 10px 10px; */
+}
 
 :deep(.n-data-table th) {
   background-color: #1e1e1e !important;
   color: #fff !important;
   border-bottom: 1px solid #444 !important;
+  border-top: 1px solid #444 !important;
+  border-left: 1px solid #444 !important;
   border-right: 1px solid #444 !important;
+  
 }
 
 :deep(.n-data-table td) {
   background-color: #1e1e1e !important;
   color: #fff !important;
   border-bottom: 1px solid #444 !important;
+  border-left: 1px solid #444 !important;
   border-right: 1px solid #444 !important;
   
 }
@@ -268,5 +309,12 @@ onMounted(async () => {
   .action-buttons {
     margin-top: 10px;
   }
+}
+
+@media (max-width: 1280px) {
+    .n-data-table{
+      padding-bottom: 99px;
+    }
+  
 }
 </style>

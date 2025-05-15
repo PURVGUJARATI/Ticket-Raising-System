@@ -203,7 +203,7 @@ public class ProjectControllerTests {
 
     @Test
     public void patchProjectTest() throws Exception {
-        String newName = "Hallo";
+        String newName = "Bello";
         String newDescription = "Ciao";
         ProjectPatchDto projectPatchDto = new ProjectPatchDto(newName, newDescription);
         MvcResult patchResult =

@@ -14,17 +14,13 @@ const activateEditUserForm = ref(false);
 
 // Avatar color
 const randomColor = computed(() => {
-  const colors = ["#2c98f5"];
+  const colors = ["#4ab2cf"];
+  // const colors = ["#2c98f5"];
   return colors[Math.floor(Math.random() * colors.length)];
 });
 
 // Theme toggling (kept for potential external use)
 const isDark = ref(false);
-const toggleTheme = () => {
-  isDark.value = !isDark.value;
-  document.documentElement.classList.toggle('dark-theme', isDark.value);
-  localStorage.setItem('theme', isDark.value ? 'dark' : 'light');
-};
 
 onMounted(() => {
   const savedTheme = localStorage.getItem('theme');

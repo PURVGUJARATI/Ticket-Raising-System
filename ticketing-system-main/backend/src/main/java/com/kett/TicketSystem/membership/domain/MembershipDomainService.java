@@ -32,6 +32,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
+import com.kett.TicketSystem.project.domain.Project;
+import com.kett.TicketSystem.project.repository.ProjectRepository;
+
 @Service
 @Transactional
 public class MembershipDomainService {
@@ -39,20 +42,22 @@ public class MembershipDomainService {
     private final ApplicationEventPublisher eventPublisher;
     private final UserDataOfMembershipRepository userDataOfMembershipRepository;
     private final ProjectDataOfMembershipRepository projectDataOfMembershipRepository;
+    private final ProjectRepository projectRepository;
 
     @Autowired
     public MembershipDomainService(
             MembershipRepository membershipRepository,
             ApplicationEventPublisher eventPublisher,
             UserDataOfMembershipRepository userDataOfMembershipRepository,
-            ProjectDataOfMembershipRepository projectDataOfMembershipRepository
+            ProjectDataOfMembershipRepository projectDataOfMembershipRepository,
+            ProjectRepository projectRepository
     ) {
         this.membershipRepository = membershipRepository;
         this.eventPublisher = eventPublisher;
         this.userDataOfMembershipRepository = userDataOfMembershipRepository;
         this.projectDataOfMembershipRepository = projectDataOfMembershipRepository;
+        this.projectRepository = projectRepository;
     }
-
 
     // create
 
@@ -87,20 +92,39 @@ public class MembershipDomainService {
     }
 
     private Membership addMembership(Membership membership) throws MembershipAlreadyExistsException {
+        // Fetch project name for exception message
+        String projectName = projectRepository.findById(membership.getProjectId())
+                .map(Project::getName)
+                .orElse("Unknown Project (ID: " + membership.getProjectId() + ")");
+
+        // Fetch user email for exception message
+        String userEmail = userDataOfMembershipRepository.findByUserId(membership.getUserId())
+                .stream()
+                .map(UserDataOfMembership::getUserEmail)
+                .map(EmailAddress::toString)
+                .findFirst()
+                .orElse("Unknown User (ID: " + membership.getUserId() + ")");
+
         if (!projectDataOfMembershipRepository.existsByProjectId(membership.getProjectId())) {
-            throw new NoProjectFoundException("could not find project with id: " + membership.getProjectId());
+            throw new NoProjectFoundException("could not find project with name: " + projectName);
         }
         if (membershipRepository.existsByUserIdAndProjectId(membership.getUserId(), membership.getProjectId())) {
             throw new MembershipAlreadyExistsException(
-                    "Membership for userId: " + membership.getUserId() +
-                    " and projectId: " + membership.getProjectId() +
-                    " already exists."
+                    "Membership of " + userEmail +
+                    " For Project : " + projectName +
+                    " Already Exists."
             );
         }
+        // if (membershipRepository.existsByUserIdAndProjectId(membership.getUserId(), membership.getProjectId())) {
+        //     throw new MembershipAlreadyExistsException(
+        //             "Membership for user email: " + userEmail +
+        //             " and project name: " + projectName +
+        //             " already exists."
+        //     );
+        // }
 
         return membershipRepository.save(membership);
     }
-
 
     // read
 
@@ -111,7 +135,7 @@ public class MembershipDomainService {
     }
 
     public List<Membership> getMembershipsByUserId(UUID userId) throws NoMembershipFoundException {
-        List<Membership> memberships =  membershipRepository.findByUserId(userId);
+        List<Membership> memberships = membershipRepository.findByUserId(userId);
         if (memberships.isEmpty()) {
             throw new NoMembershipFoundException("could not find memberships with userId: " + userId);
         }
@@ -133,7 +157,7 @@ public class MembershipDomainService {
     }
 
     public List<Membership> getMembershipsByProjectId(UUID projectId) throws NoMembershipFoundException {
-        List<Membership> memberships =  membershipRepository.findByProjectId(projectId);
+        List<Membership> memberships = membershipRepository.findByProjectId(projectId);
         if (memberships.isEmpty()) {
             throw new NoMembershipFoundException("could not find memberships with projectId: " + projectId);
         }
@@ -156,7 +180,6 @@ public class MembershipDomainService {
         return userData.get(0).getUserId();
     }
 
-
     // update
 
     public void updateMemberShipState(UUID id, State state) throws NoMembershipFoundException {
@@ -174,24 +197,38 @@ public class MembershipDomainService {
 
     public void updateMembershipRole(UUID id, Role role) throws NoMembershipFoundException {
         Membership existingMembership = this.getMembershipById(id);
-        Integer numOfActiveAdmins =
-                membershipRepository
-                        .countMembershipByProjectIdAndStateEqualsAndRoleEquals(
-                                existingMembership.getProjectId(),
-                                State.ACCEPTED,
-                                Role.ADMIN
-                        );
+        UUID projectId = existingMembership.getProjectId();
+        UUID userId = existingMembership.getUserId();
+
+        // Fetch project name for exception message
+        String projectName = projectRepository.findById(projectId)
+                .map(Project::getName)
+                .orElse("Unknown Project (ID: " + projectId + ")");
+
+        // Fetch user email for exception message
+        String userEmail = userDataOfMembershipRepository.findByUserId(userId)
+                .stream()
+                .map(UserDataOfMembership::getUserEmail)
+                .map(EmailAddress::toString)
+                .findFirst()
+                .orElse("Unknown User (ID: " + userId + ")");
+
+        Integer numOfActiveAdmins = membershipRepository
+                .countMembershipByProjectIdAndStateEqualsAndRoleEquals(
+                        projectId,
+                        State.ACCEPTED,
+                        Role.ADMIN
+                );
         if (existingMembership.isAccepted() && numOfActiveAdmins < 2 && role.equals(Role.MEMBER)) {
             throw new AlreadyLastAdminException(
-                    "The membership with id: " + existingMembership.getId() + " " +
+                    "The membership for user email: " + userEmail + " " +
                     "cannot be degraded to " + role.toString() +
-                    " because it is the last ADMIN of project with id: " + existingMembership.getProjectId()
+                    " because it is the last ADMIN of project with name: " + projectName
             );
         }
         existingMembership.setRole(role);
         membershipRepository.save(existingMembership);
     }
-
 
     // delete
 
@@ -243,7 +280,6 @@ public class MembershipDomainService {
         newAdmin.setRole(Role.ADMIN);
         membershipRepository.save(newAdmin);
     }
-
 
     // event listeners
 
